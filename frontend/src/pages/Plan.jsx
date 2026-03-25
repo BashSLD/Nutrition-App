@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { getTodayFecha } from '../lib/dates'
 import MealCard from '../components/MealCard'
 import JuiceChecklist from '../components/JuiceChecklist'
+import s from '../styles/Plan.module.css'
+import err from '../styles/shared.module.css'
 
 const MEAL_TYPES = ['desayuno', 'comida', 'cena', 'snack']
 const MEAL_ICONS = { desayuno: '🌅', comida: '☀️', cena: '🌙', snack: '🍿' }
@@ -13,7 +15,7 @@ export default function Plan() {
   const { user, profile } = useAuth()
   const [meals, setMeals] = useState([])
   const [jugos, setJugos] = useState([])
-  const [selecciones, setSelecciones] = useState({}) // { tipo: meal_id }
+  const [selecciones, setSelecciones] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const isEimy = profile?.theme === 'eimy'
@@ -32,12 +34,10 @@ export default function Plan() {
       if (jugosRes.error) throw jugosRes.error
       setMeals(mealsRes.data || [])
       setJugos(jugosRes.data || [])
-      // Build map tipo→meal_id from DB
       const sel = {}
       if (!selRes.error && selRes.data) {
-        selRes.data.forEach(s => { sel[s.tipo] = s.meal_id })
+        selRes.data.forEach(r => { sel[r.tipo] = r.meal_id })
       }
-      // For Bash: auto-select if only one meal per type
       if (!isEimy && mealsRes.data) {
         MEAL_TYPES.forEach(tipo => {
           if (!sel[tipo]) {
@@ -79,9 +79,9 @@ export default function Plan() {
 
   if (error) return (
     <div className="page">
-      <div className="page-error">
+      <div className={err.pageError}>
         {error}
-        <button className="page-error-retry" onClick={fetchData}>↺ Reintentar</button>
+        <button className={err.pageErrorRetry} onClick={fetchData}>↺ Reintentar</button>
       </div>
     </div>
   )
@@ -95,20 +95,25 @@ export default function Plan() {
   const peso = profile?.peso_kg || 0
   const altura = profile?.altura_cm || 0
   const edad = profile?.edad || 0
+  const sexo = profile?.sexo || (isEimy ? 'femenino' : 'masculino')
+  const actividad = profile?.nivel_actividad || 1.2
 
+  // Mifflin-St Jeor (1990) — más precisa que Harris-Benedict
   const tmb = peso && altura && edad
-    ? Math.round(isEimy
-        ? 655 + (9.563 * peso) + (1.850 * altura) - (4.676 * edad)
-        : 66  + (13.716 * peso) + (5.003 * altura) - (6.755 * edad))
+    ? Math.round(
+        sexo === 'femenino'
+          ? (10 * peso) + (6.25 * altura) - (5 * edad) - 161
+          : (10 * peso) + (6.25 * altura) - (5 * edad) + 5
+      )
     : 0
-  const tdee = tmb ? Math.round(tmb * 1.2) : 0
-  const metaGym = metaKcal ? metaKcal + (isEimy ? 100 : 150) : 0
+  const tdee = tmb ? Math.round(tmb * actividad) : 0
+  const deficitTeorico = tdee && metaKcal ? tdee - metaKcal : 0
 
-  // Daily summary: sum kcal of selected meals
+  // Daily summary
   const selectedMeals = Object.values(selecciones)
     .map(id => meals.find(m => m.id === id))
     .filter(Boolean)
-  const kcalHoy = selectedMeals.reduce((s, m) => s + (m.kcal_total || 0), 0)
+  const kcalHoy = selectedMeals.reduce((sum, m) => sum + (m.kcal_total || 0), 0)
   const deficit = metaKcal && kcalHoy ? metaKcal - kcalHoy : null
   const selCount = selectedMeals.length
   const totalTypes = MEAL_TYPES.filter(t => mealsByType[t].length > 0).length
@@ -117,62 +122,62 @@ export default function Plan() {
     <div className="page plan-page">
 
       {/* HEADER */}
-      <div className="plan-header">
+      <div className={s.planHeader}>
         {isEimy
-          ? <><div className="plan-stars">✦ ✧ ✦ ✧ ✦</div><h1 className="plan-title-eimy">Mi Plan 💖</h1></>
-          : <><span className="plan-tag">PLAN NUTRICIONAL / 2026</span><h1 className="plan-title-bash">MI<br/><span>DÉFICIT</span></h1></>
+          ? <><div className={s.planStars}>✦ ✧ ✦ ✧ ✦</div><h1 className={s.planTitleEimy}>Mi Plan 💖</h1></>
+          : <><span className={s.planTag}>PLAN NUTRICIONAL / 2026</span><h1 className={s.planTitleBash}>MI<br/><span>DÉFICIT</span></h1></>
         }
       </div>
 
       {/* MÉTRICAS */}
-      <div className="metrics-grid">
-        <div className="metric-card">
-          <div className="mc-label">TMB</div>
-          <div className="mc-val">{tmb.toLocaleString()}</div>
-          <div className="mc-unit">kcal/día</div>
-          <div className="mc-def">Calorías en reposo absoluto</div>
+      <div className={s.metricsGrid}>
+        <div className={s.metricCard}>
+          <div className={s.mcLabel}>TMB</div>
+          <div className={s.mcVal}>{tmb.toLocaleString()}</div>
+          <div className={s.mcUnit}>kcal/día</div>
+          <div className={s.mcDef}>Calorías en reposo absoluto</div>
         </div>
-        <div className="metric-card">
-          <div className="mc-label">TDEE</div>
-          <div className="mc-val">{tdee.toLocaleString()}</div>
-          <div className="mc-unit">kcal/día</div>
-          <div className="mc-def">Gasto real con tu actividad</div>
+        <div className={s.metricCard}>
+          <div className={s.mcLabel}>TDEE</div>
+          <div className={s.mcVal}>{tdee.toLocaleString()}</div>
+          <div className={s.mcUnit}>kcal/día</div>
+          <div className={s.mcDef}>Gasto real con tu actividad</div>
         </div>
-        <div className="metric-card metric-highlight">
-          <div className="mc-label">Meta {isEimy ? '✦' : ''}</div>
-          <div className="mc-val">{(metaKcal || (isEimy ? 1300 : 1700)).toLocaleString()}</div>
-          <div className="mc-unit">{tdee && metaKcal ? `déficit −${tdee - metaKcal} kcal` : 'déficit kcal'}</div>
+        <div className={`${s.metricCard} ${s.metricHighlight}`}>
+          <div className={s.mcLabel}>Meta {isEimy ? '✦' : ''}</div>
+          <div className={s.mcVal}>{(metaKcal || (isEimy ? 1300 : 1700)).toLocaleString()}</div>
+          <div className={s.mcUnit}>{tdee && metaKcal ? `déficit −${tdee - metaKcal} kcal` : 'déficit kcal'}</div>
         </div>
-        <div className="metric-card">
-          <div className="mc-label">Con gym</div>
-          <div className="mc-val">{metaGym.toLocaleString()}</div>
-          <div className="mc-unit">kcal/día</div>
-          <div className="mc-def">Al iniciar actividad física</div>
+        <div className={s.metricCard}>
+          <div className={s.mcLabel}>Déficit</div>
+          <div className={s.mcVal}>−{deficitTeorico}</div>
+          <div className={s.mcUnit}>kcal/día</div>
+          <div className={s.mcDef}>{actividad > 1.2 ? 'Con tu actividad actual' : 'Sedentario'}</div>
         </div>
       </div>
 
       {/* RESUMEN DEL DÍA */}
       {(isEimy || selCount > 0) && (
-        <div className="day-summary">
-          <div className="ds-header">
-            <span className="ds-title">{isEimy ? '✦ Hoy' : 'Hoy'}</span>
-            <span className="ds-progress">{selCount}/{totalTypes} comidas</span>
+        <div className={s.daySummary}>
+          <div className={s.dsHeader}>
+            <span className={s.dsTitle}>{isEimy ? '✦ Hoy' : 'Hoy'}</span>
+            <span className={s.dsProgress}>{selCount}/{totalTypes} comidas</span>
           </div>
-          <div className="ds-kcal-row">
-            <div className="ds-kcal-val">{kcalHoy > 0 ? kcalHoy.toLocaleString() : '—'}</div>
-            <div className="ds-kcal-unit">kcal seleccionadas</div>
+          <div className={s.dsKcalRow}>
+            <div className={s.dsKcalVal}>{kcalHoy > 0 ? kcalHoy.toLocaleString() : '—'}</div>
+            <div className={s.dsKcalUnit}>kcal seleccionadas</div>
             {deficit !== null && (
-              <div className={`ds-deficit ${deficit >= 0 ? 'ds-ok' : 'ds-over'}`}>
+              <div className={`${s.dsDeficit} ${deficit >= 0 ? s.dsOk : s.dsOver}`}>
                 {deficit >= 0 ? `−${deficit} del plan` : `+${Math.abs(deficit)} sobre meta`}
               </div>
             )}
           </div>
           {selCount > 0 && (
-            <div className="ds-chips">
+            <div className={s.dsChips}>
               {selectedMeals.map(m => (
-                <span key={m.id} className="ds-chip">
+                <span key={m.id} className={s.dsChip}>
                   {MEAL_ICONS[m.tipo]} {m.nombre}
-                  {m.kcal_total ? <span className="ds-chip-kcal"> {m.kcal_total}</span> : null}
+                  {m.kcal_total ? <span className={s.dsChipKcal}> {m.kcal_total}</span> : null}
                 </span>
               ))}
             </div>
@@ -183,11 +188,11 @@ export default function Plan() {
       {/* COMIDAS */}
       {MEAL_TYPES.map(tipo => (
         mealsByType[tipo].length > 0 && (
-          <div key={tipo} className="plan-section">
-            <div className="plan-section-header">
-              <span className="psh-icon">{MEAL_ICONS[tipo]}</span>
-              <span className="psh-title">{MEAL_LABELS[tipo]}</span>
-              <span className="psh-kcal">
+          <div key={tipo} className={s.planSection}>
+            <div className={s.planSectionHeader}>
+              <span className={s.pshIcon}>{MEAL_ICONS[tipo]}</span>
+              <span className={s.pshTitle}>{MEAL_LABELS[tipo]}</span>
+              <span className={s.pshKcal}>
                 {(() => {
                   const vals = mealsByType[tipo].map(m => m.kcal_total || 0).filter(v => v > 0)
                   if (vals.length === 0) return null
@@ -197,7 +202,7 @@ export default function Plan() {
                 })()}
               </span>
             </div>
-            <div className="meals-list">
+            <div>
               {mealsByType[tipo].map(meal => (
                 <MealCard
                   key={meal.id}
@@ -214,13 +219,13 @@ export default function Plan() {
       ))}
 
       {/* JUGOS */}
-      <div className="plan-section">
-        <div className="plan-section-header">
-          <span className="psh-icon">🥤</span>
-          <span className="psh-title">{isEimy ? 'Mis Jugos' : 'Jugos'}</span>
+      <div className={s.planSection}>
+        <div className={s.planSectionHeader}>
+          <span className={s.pshIcon}>🥤</span>
+          <span className={s.pshTitle}>{isEimy ? 'Mis Jugos' : 'Jugos'}</span>
         </div>
-        {isEimy && <p className="jugos-hint">Toca cada ingrediente para tacharlo mientras preparas 💅</p>}
-        <div className={`jugos-grid jugos-grid-${isEimy ? 3 : 2}`}>
+        {isEimy && <p className={s.jugosHint}>Toca cada ingrediente para tacharlo mientras preparas 💅</p>}
+        <div className={`${s.jugosGrid} ${isEimy ? s.jugosGrid3 : s.jugosGrid2}`}>
           {jugos.map(jugo => (
             <JuiceChecklist
               key={jugo.id}

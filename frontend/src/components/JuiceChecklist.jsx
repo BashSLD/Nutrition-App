@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import s from '../styles/Plan.module.css'
 
 export default function JuiceChecklist({ jugo, isEimy, onUpdate }) {
   const [checked, setChecked] = useState({})
@@ -19,46 +20,46 @@ export default function JuiceChecklist({ jugo, isEimy, onUpdate }) {
   }
 
   return (
-    <div className={`juice-card ${isEimy ? 'juice-eimy' : 'juice-bash'}`}>
-      <div className="juice-accordion-head" onClick={() => setOpen(o => !o)}>
-        <div className="juice-head-left">
-          {isEimy && jugo.emoji && <span className="juice-emoji">{jugo.emoji}</span>}
+    <div className={`${s.juiceCard} ${isEimy ? s.juiceEimy : s.juiceBash}`}>
+      <div className={s.juiceAccordionHead} onClick={() => setOpen(o => !o)}>
+        <div className={s.juiceHeadLeft}>
+          {isEimy && jugo.emoji && <span className={s.juiceEmoji}>{jugo.emoji}</span>}
           <div>
-            <div className="juice-name">{jugo.nombre}</div>
-            {jugo.subtitulo && <div className="juice-sub">{jugo.subtitulo}</div>}
+            <div className={s.juiceName}>{jugo.nombre}</div>
+            {jugo.subtitulo && <div className={s.juiceSub}>{jugo.subtitulo}</div>}
           </div>
         </div>
-        <div className="juice-head-right">
-          {done > 0 && <span className="juice-prog-badge">{done}/{total}</span>}
-          <span className="juice-chevron">{open ? '▲' : '▼'}</span>
+        <div className={s.juiceHeadRight}>
+          {done > 0 && <span className={s.juiceProgBadge}>{done}/{total}</span>}
+          <span className={s.juiceChevron}>{open ? '▲' : '▼'}</span>
         </div>
       </div>
 
-      <div className="juice-prog juice-prog-slim">
-        <div className="juice-prog-fill" style={{ width: `${pct}%` }} />
+      <div className={`${s.juiceProg} ${s.juiceProgSlim}`}>
+        <div className={s.juiceProgFill} style={{ width: `${pct}%` }} />
       </div>
 
       {open && (
         <>
-          <ul className="juice-list">
+          <ul className={s.juiceList}>
             {ingredientes.map((ing, idx) => (
               <li
                 key={idx}
-                className={`juice-item ${checked[idx] ? 'done' : ''}`}
+                className={`${s.juiceItem} ${checked[idx] ? s.juiceItemDone : ''}`}
                 onClick={() => toggle(idx)}
               >
-                <div className={`jchk ${checked[idx] ? 'jchk-done' : ''}`}>
+                <div className={`${s.jchk} ${checked[idx] ? s.jchkDone : ''}`}>
                   {checked[idx] && '✓'}
                 </div>
-                <span className="ji-name">{ing.nombre}</span>
-                <span className="ji-qty">{ing.cantidad} {ing.unidad}</span>
+                <span className={s.jiName}>{ing.nombre}</span>
+                <span className={s.jiQty}>{ing.cantidad} {ing.unidad}</span>
               </li>
             ))}
           </ul>
 
-          {jugo.nota && <div className="juice-note">{jugo.nota}</div>}
+          {jugo.nota && <div className={s.juiceNote}>{jugo.nota}</div>}
 
-          <button className="juice-reset" onClick={reset}>↺ reiniciar</button>
+          <button className={s.juiceReset} onClick={reset}>↺ reiniciar</button>
         </>
       )}
     </div>

@@ -1,11 +1,13 @@
 // Navbar.jsx
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
+import s from '../styles/Navbar.module.css'
 
 export default function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { profile, logout } = useAuth()
+  const { user, profile, logout, refreshProfile } = useAuth()
   const isEimy = profile?.theme === 'eimy'
 
   const links = [
@@ -15,21 +17,32 @@ export default function Navbar() {
     { path: '/seguimiento', icon: '📊',                   label: 'Progreso' },
   ]
 
+  async function toggleTheme() {
+    if (!user) return
+    const newTheme = isEimy ? 'bash' : 'eimy'
+    await supabase.from('profiles').update({ theme: newTheme }).eq('id', user.id)
+    await refreshProfile()
+  }
+
   return (
-    <nav className="navbar">
+    <nav className={s.navbar}>
       {links.map(l => (
         <button
           key={l.path}
-          className={`nav-item ${location.pathname === l.path ? 'active' : ''}`}
+          className={`${s.navItem} ${location.pathname === l.path ? s.active : ''}`}
           onClick={() => navigate(l.path)}
         >
-          <span className="nav-icon">{l.icon}</span>
-          <span className="nav-label">{l.label}</span>
+          <span className={s.navIcon}>{l.icon}</span>
+          <span className={s.navLabel}>{l.label}</span>
         </button>
       ))}
-      <button className="nav-item nav-logout" onClick={logout}>
-        <span className="nav-icon">↩</span>
-        <span className="nav-label">Salir</span>
+      <button className={s.navItem} onClick={toggleTheme} title="Cambiar tema (Dev)">
+        <span className={s.navIcon}>🎨</span>
+        <span className={s.navLabel}>Tema</span>
+      </button>
+      <button className={s.navItem} onClick={logout}>
+        <span className={s.navIcon}>↩</span>
+        <span className={s.navLabel}>Salir</span>
       </button>
     </nav>
   )

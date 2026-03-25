@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import s from '../styles/Login.module.css'
 
 export default function Login() {
   const { user, loading, loginWithGoogle } = useAuth()
@@ -11,12 +12,12 @@ export default function Login() {
   }, [user, loading, navigate])
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-logo">🥗</div>
-        <h1 className="login-title">NutriApp</h1>
-        <p className="login-sub">Plan nutricional & seguimiento personal</p>
-        <button className="login-btn-google" onClick={loginWithGoogle}>
+    <div className={s.loginPage}>
+      <div className={s.loginCard}>
+        <div className={s.loginLogo}>🥗</div>
+        <h1 className={s.loginTitle}>NutriApp</h1>
+        <p className={s.loginSub}>Plan nutricional & seguimiento personal</p>
+        <button className={s.loginBtnGoogle} onClick={loginWithGoogle}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
             <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
@@ -25,7 +26,7 @@ export default function Login() {
           </svg>
           Continuar con Google
         </button>
-        <p className="login-note">Solo para Bash & Eimy 💚</p>
+        <p className={s.loginNote}>Solo para Bash & Eimy 💚</p>
       </div>
     </div>
   )

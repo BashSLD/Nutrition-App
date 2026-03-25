@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import s from '../styles/Modal.module.css'
+import btn from '../styles/shared.module.css'
 
 export default function MedidaForm({ initial, onSave, onCancel }) {
   const [values, setValues] = useState({
@@ -31,25 +33,25 @@ export default function MedidaForm({ initial, onSave, onCancel }) {
   ]
 
   return (
-    <div className="medida-form">
-      <div className="mf-field">
-        <label className="mf-label">Fecha</label>
+    <div className={s.medidaForm}>
+      <div className={s.mfField}>
+        <label className={s.mfLabel}>Fecha</label>
         <input
           type="date"
-          className="mf-input"
+          className={s.mfInput}
           value={values.fecha}
           onChange={e => handle('fecha', e.target.value)}
         />
       </div>
 
-      <div className="mf-grid">
+      <div className={s.mfGrid}>
         {fields.map(f => (
-          <div key={f.key} className="mf-field">
-            <label className="mf-label">{f.label} <span className="mf-unit">({f.unit})</span></label>
+          <div key={f.key} className={s.mfField}>
+            <label className={s.mfLabel}>{f.label} <span className={s.mfUnit}>({f.unit})</span></label>
             <input
               type={f.type}
               step="0.1"
-              className="mf-input"
+              className={s.mfInput}
               placeholder="—"
               value={values[f.key]}
               onChange={e => handle(f.key, e.target.value)}
@@ -58,10 +60,10 @@ export default function MedidaForm({ initial, onSave, onCancel }) {
         ))}
       </div>
 
-      <div className="mf-field">
-        <label className="mf-label">Notas</label>
+      <div className={s.mfField}>
+        <label className={s.mfLabel}>Notas</label>
         <textarea
-          className="mf-input mf-textarea"
+          className={`${s.mfInput} ${s.mfTextarea}`}
           placeholder="Cómo me siento, observaciones..."
           value={values.notas}
           onChange={e => handle('notas', e.target.value)}
@@ -69,9 +71,9 @@ export default function MedidaForm({ initial, onSave, onCancel }) {
         />
       </div>
 
-      <div className="mf-actions">
-        <button className="btn-primary" onClick={submit}>Guardar</button>
-        <button className="btn-secondary" onClick={onCancel}>Cancelar</button>
+      <div className={s.mfActions}>
+        <button className={btn.btnPrimary} onClick={submit}>Guardar</button>
+        <button className={btn.btnSecondary} onClick={onCancel}>Cancelar</button>
       </div>
     </div>
   )

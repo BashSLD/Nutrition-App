@@ -1,0 +1,18 @@
+/* Home.module.css */
+.homeHeader { margin-bottom: 24px; }
+.homeGreeting { font-family: var(--font-head); font-size: clamp(28px,6vw,40px); font-weight: 800; margin-bottom: 4px; }
+.homeSub { font-size: 13px; color: var(--muted); }
+.homeAlert { background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.3); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: #fbbf24; margin-bottom: 16px; cursor: pointer; }
+.homeAlert span { text-decoration: underline; }
+.homeLastRegistro { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
+.hlrLabel { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+.hlrRow { display: flex; gap: 16px; }
+.hlrStat { flex: 1; }
+.hlrVal { font-family: var(--font-head); font-size: 20px; font-weight: 800; color: var(--accent); }
+.hlrKey { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.homeNavGrid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.homeNavCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; cursor: pointer; transition: border-color .15s, background .15s; display: flex; flex-direction: column; gap: 4px; }
+.homeNavCard:hover { border-color: var(--accent); background: var(--surface2); }
+.hncIcon { font-size: 24px; margin-bottom: 4px; }
+.hncLabel { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
+.hncDesc { font-size: 12px; color: var(--muted); }

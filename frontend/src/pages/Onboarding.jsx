@@ -16,6 +16,8 @@ export default function Onboarding({ user, onComplete }) {
       id: user.id,
       name: nombre,
       theme,
+      sexo: theme === 'bash' ? 'masculino' : 'femenino',
+      nivel_actividad: 1.2,
       peso_kg: peso,
       altura_cm: altura,
       edad,

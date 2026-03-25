@@ -1,0 +1,127 @@
+/* Plan.module.css — Plan nutricional, meals, jugos, métricas, selección diaria */
+
+/* Metrics */
+.metricsGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 32px; }
+.metricCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 14px; }
+.mcLabel { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+.mcVal { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--accent); line-height: 1; letter-spacing: -.02em; }
+.mcUnit { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.mcDef { font-size: 10px; color: var(--muted2); margin-top: 5px; line-height: 1.3; }
+.metricHighlight { background: var(--accent); }
+
+:global(.theme-bash) .metricHighlight .mcLabel { color: #1a2200; }
+:global(.theme-bash) .metricHighlight .mcVal   { color: #0a0a0a; }
+:global(.theme-bash) .metricHighlight .mcUnit  { color: #3a4a00; }
+:global(.theme-eimy) .metricHighlight .mcVal   { color: var(--yellow); filter: drop-shadow(0 0 8px rgba(255,230,0,.6)); }
+
+/* Plan header */
+.planHeader { margin-bottom: 24px; }
+.planTag { font-size: 10px; color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; display: inline-block; letter-spacing: .15em; }
+.planTitleBash { font-family: 'Syne', sans-serif; font-size: clamp(40px,10vw,64px); font-weight: 800; line-height: .9; letter-spacing: -.03em; margin-top: 12px; }
+.planTitleBash span { color: var(--accent); }
+.planStars { font-size: 16px; letter-spacing: 6px; color: var(--yellow); animation: sparkle 2s ease-in-out infinite alternate; margin-bottom: 8px; }
+.planTitleEimy { font-family: 'Pacifico', cursive; font-size: clamp(36px,8vw,56px); background: linear-gradient(135deg,#ff1aab,#d58bff,#00f0ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+/* Plan sections */
+.planSection { margin-bottom: 32px; }
+.planSectionHeader { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 12px; border-radius: var(--radius); background: var(--surface2); border-left: 3px solid var(--accent); }
+.pshIcon { font-size: 18px; }
+.pshTitle { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; flex: 1; text-transform: uppercase; letter-spacing: .08em; }
+.pshKcal { font-size: 12px; color: var(--accent); border: 1px solid var(--accent); padding: 2px 10px; border-radius: 99px; }
+.jugosHint { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+/* Day summary */
+.daySummary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; border-left: 3px solid var(--accent); }
+.dsHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.dsTitle { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; }
+.dsProgress { font-size: 11px; color: var(--muted); }
+.dsKcalRow { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.dsKcalVal { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: var(--accent); line-height: 1; }
+.dsKcalUnit { font-size: 11px; color: var(--muted); }
+.dsDeficit { font-size: 11px; padding: 2px 10px; border-radius: 99px; margin-left: auto; font-weight: 700; }
+.dsOk { background: rgba(200,241,53,.12); color: var(--accent); border: 1px solid rgba(200,241,53,.3); }
+.dsOver { background: rgba(255,80,80,.12); color: #ff6060; border: 1px solid rgba(255,80,80,.3); }
+.dsChips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dsChip { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 99px; color: var(--text); }
+.dsChipKcal { color: var(--accent); font-weight: 700; }
+:global(.theme-eimy) .dsOk { background: rgba(255,26,171,.1); color: var(--accent); border-color: rgba(255,26,171,.3); }
+
+/* Meal selection */
+.mealSelected.mealCardBash { border-color: var(--accent); border-left: 3px solid var(--accent); }
+.mealSelected.mealCardEimy { border-color: var(--accent); }
+.mealSelBadge { font-size: 13px; color: var(--accent); margin-left: 8px; font-weight: 700; flex-shrink: 0; }
+.mcbHeaderRight { display: flex; align-items: center; gap: 8px; }
+.mealSelDot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.mceFooterActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btnElegir { font-size: 11px; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; font-family: var(--font-body); transition: all .15s; }
+.btnElegir:hover { background: var(--accent); color: var(--bg); }
+.btnElegirActive { background: var(--accent); color: var(--bg); font-weight: 700; }
+
+/* Meal cards bash */
+.mealCardBash { background: var(--surface); border: 1px solid var(--border); margin-bottom: 2px; border-radius: 4px; }
+.mcbHeader { display: flex; justify-content: space-between; padding: 12px 16px; cursor: pointer; align-items: center; }
+.mcbName { font-size: 13px; }
+.mcbKcal { font-size: 12px; color: var(--accent); }
+.mcbBody { padding: 0 16px 14px; }
+.mcbRow { display: grid; grid-template-columns: 1fr 80px 60px; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--muted2); align-items: start; font-size: 12px; }
+.mcbIngName { color: var(--text); }
+.mcbTip { font-size: 11px; color: var(--accent2); font-style: italic; margin-top: 2px; }
+.mcbQty { color: var(--muted); text-align: right; }
+.mcbFooter { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; font-size: 12px; color: var(--muted); }
+
+/* Meal cards eimy */
+.mealCardEimy { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 10px; overflow: hidden; }
+.mceHead { display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: var(--surface2); cursor: pointer; }
+.mceLetter { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),#9b1dff); display: flex; align-items: center; justify-content: center; font-family: 'Pacifico',cursive; font-size: 13px; color: white; flex-shrink: 0; }
+.mceName { font-weight: 900; flex: 1; font-size: 13px; }
+.mceKcal { font-size: 12px; color: var(--accent); font-weight: 700; }
+.mceBody { padding: 0 18px 16px; }
+.mceIng { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(255,110,216,.1); gap: 8px; }
+.mceIng:last-of-type { border-bottom: none; }
+.mceIngName { font-size: 13px; flex: 1; }
+.mceTip { font-size: 11px; color: #7fff6e; font-style: italic; margin-top: 2px; }
+.mceIngRight { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.mceQty { font-size: 12px; color: var(--muted); }
+.mceKcalIng { font-size: 11px; color: var(--accent); font-weight: 700; }
+.mceFooter { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; font-size: 12px; color: var(--muted); }
+.mceTotal strong { color: var(--yellow); }
+
+/* Jugos */
+.jugosGrid { display: grid; gap: 12px; }
+.jugosGrid2 { grid-template-columns: 1fr; }
+.jugosGrid3 { grid-template-columns: 1fr; }
+
+.juiceCard { border-radius: var(--radius); padding: 18px 16px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+.juiceBash { background: var(--surface); }
+.juiceEimy { background: var(--surface); }
+.juiceEimy::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg,var(--accent),#9b1dff); }
+.juiceAccordionHead { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+.juiceHeadLeft { display: flex; align-items: center; gap: 10px; }
+.juiceHeadRight { display: flex; align-items: center; gap: 8px; }
+.juiceProgBadge { font-size: 10px; color: var(--accent); border: 1px solid var(--accent); padding: 1px 7px; border-radius: 99px; }
+.juiceChevron { font-size: 10px; color: var(--muted); }
+.juiceEmoji { font-size: 24px; display: block; }
+.juiceName { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+.juiceSub { font-size: 11px; color: var(--muted); }
+.juiceProgSlim { margin-top: 8px; margin-bottom: 0; }
+.juiceList { list-style: none; margin-top: 12px; }
+.juiceItem { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--muted2); cursor: pointer; transition: opacity .15s; font-size: 12px; }
+.juiceItem:last-child { border-bottom: none; }
+.juiceItemDone { opacity: .35; }
+.juiceItemDone .jiName { text-decoration: line-through; }
+.jchk { width: 15px; height: 15px; border: 1px solid var(--muted); border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+.jchkDone { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.jiName { flex: 1; color: var(--text); }
+.jiQty { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.juiceProg { height: 3px; background: var(--muted2); border-radius: 99px; overflow: hidden; }
+.juiceProgFill { height: 100%; background: var(--accent); width: 0%; transition: width .3s; }
+.juiceReset { background: none; border: none; color: var(--muted); font-size: 10px; cursor: pointer; font-family: var(--font-body); margin-top: 8px; letter-spacing: .1em; padding: 0; }
+.juiceReset:hover { color: var(--accent); }
+.juiceNote { font-size: 11px; color: var(--accent2); margin-top: 8px; font-style: italic; }
+
+@keyframes sparkle { from { opacity: .3 } to { opacity: .8 } }
+
+@media (max-width: 400px) {
+  .metricsGrid { grid-template-columns: repeat(2,1fr); }
+  .jugosGrid2, .jugosGrid3 { grid-template-columns: 1fr; }
+}

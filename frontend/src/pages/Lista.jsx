@@ -3,17 +3,14 @@ import { useAuth } from '../hooks/useAuth'
 import { useRealtime } from '../hooks/useRealtime'
 import { supabase } from '../lib/supabase'
 import ShoppingItem from '../components/ShoppingItem'
+import s from '../styles/Lista.module.css'
+import err from '../styles/shared.module.css'
 
 const TABS = [
   { key: 'compartida', label: '🛒 Compartida' },
   { key: 'bash',       label: '⚡ Bash' },
   { key: 'eimy',       label: '✨ Eimy' },
 ]
-
-const FREQ_LABELS = {
-  'semanal':   { label: 'Cada 7 días',    color: 'blue',  icon: '📦' },
-  '3-4 dias':  { label: 'Cada 3–4 días',  color: 'green', icon: '🥬' },
-}
 
 export default function Lista() {
   const { user } = useAuth()
@@ -26,12 +23,12 @@ export default function Lista() {
   const fetchItems = useCallback(async () => {
     setError(null)
     try {
-      const { data, error: err } = await supabase
+      const { data, error: fetchErr } = await supabase
         .from('lista_items')
         .select('*')
         .eq('owner', tab)
         .order('categoria')
-      if (err) throw err
+      if (fetchErr) throw fetchErr
       setItems(data || [])
     } catch {
       setError('No se pudo cargar la lista. Verifica tu conexión.')
@@ -42,7 +39,6 @@ export default function Lista() {
 
   useEffect(() => { setLoading(true); fetchItems() }, [fetchItems])
 
-  // Realtime — actualiza item específico sin recargar todo
   const handleRealtime = useCallback((payload) => {
     if (payload.new?.owner !== tab) return
     setLastUpdate(new Date())
@@ -67,17 +63,16 @@ export default function Lista() {
 
   async function resetAll() {
     try {
-      const { error: err } = await supabase.from('lista_items')
+      const { error: resetErr } = await supabase.from('lista_items')
         .update({ checked: false, checked_by: null })
         .eq('owner', tab)
-      if (err) throw err
+      if (resetErr) throw resetErr
       fetchItems()
     } catch {
       setError('No se pudo reiniciar la lista.')
     }
   }
 
-  // Agrupar por categoría
   const grouped = items.reduce((acc, item) => {
     if (!acc[item.categoria]) acc[item.categoria] = []
     acc[item.categoria].push(item)
@@ -88,7 +83,6 @@ export default function Lista() {
   const done = items.filter(i => i.checked).length
   const pct = total ? Math.round(done / total * 100) : 0
 
-  // Agrupar categorías por frecuencia
   const freqMap = {}
   items.forEach(i => {
     const cat = i.categoria
@@ -98,28 +92,27 @@ export default function Lista() {
   return (
     <div className="page lista-page">
 
-      <div className="lista-header">
-        <h1 className="lista-title">Lista de compras</h1>
+      <div className={s.listaHeader}>
+        <h1 className={s.listaTitle}>Lista de compras</h1>
         {lastUpdate && (
-          <span className="lista-updated">
+          <span className={s.listaUpdated}>
             actualizado {Math.round((new Date() - lastUpdate) / 1000)}s atrás
           </span>
         )}
       </div>
 
       {error && (
-        <div className="page-error">
+        <div className={err.pageError}>
           {error}
-          <button className="page-error-retry" onClick={fetchItems}>↺ Reintentar</button>
+          <button className={err.pageErrorRetry} onClick={fetchItems}>↺ Reintentar</button>
         </div>
       )}
 
-      {/* TABS */}
-      <div className="lista-tabs">
+      <div className={s.listaTabs}>
         {TABS.map(t => (
           <button
             key={t.key}
-            className={`lista-tab ${tab === t.key ? 'active' : ''}`}
+            className={`${s.listaTab} ${tab === t.key ? s.listaTabActive : ''}`}
             onClick={() => setTab(t.key)}
           >
             {t.label}
@@ -127,50 +120,47 @@ export default function Lista() {
         ))}
       </div>
 
-      {/* FRECUENCIA CARDS */}
-      <div className="freq-cards">
-        <div className="freq-card freq-semanal">
-          <div className="fc-icon">📦</div>
-          <div className="fc-title">Cada 7 días</div>
-          <div className="fc-desc">Proteínas, lácteos, carbohidratos, especias</div>
+      <div className={s.freqCards}>
+        <div className={s.freqCard}>
+          <div className={s.fcIcon}>📦</div>
+          <div className={s.fcTitle}>Cada 7 días</div>
+          <div className={s.fcDesc}>Proteínas, lácteos, carbohidratos, especias</div>
         </div>
-        <div className="freq-card freq-fresca">
-          <div className="fc-icon">🥬</div>
-          <div className="fc-title">Cada 3–4 días</div>
-          <div className="fc-desc">Verdura y fruta fresca para jugos y comidas</div>
-        </div>
-      </div>
-
-      {/* PROGRESS */}
-      <div className="lista-progress">
-        <div className="lp-top">
-          <span className="lp-label">Progreso</span>
-          <span className="lp-pct">{pct}%</span>
-          <button className="btn-reset" onClick={resetAll}>↺ Reiniciar</button>
-        </div>
-        <div className="lp-bar">
-          <div className="lp-fill" style={{ width: `${pct}%` }} />
-        </div>
-        <div className="lp-stats">
-          <div className="lps"><div className="lps-val">{done}</div><div className="lps-key">Comprados</div></div>
-          <div className="lps"><div className="lps-val lps-pending">{total - done}</div><div className="lps-key">Pendientes</div></div>
-          <div className="lps"><div className="lps-val">{total}</div><div className="lps-key">Total</div></div>
+        <div className={`${s.freqCard} ${s.freqFresca}`}>
+          <div className={s.fcIcon}>🥬</div>
+          <div className={s.fcTitle}>Cada 3–4 días</div>
+          <div className={s.fcDesc}>Verdura y fruta fresca para jugos y comidas</div>
         </div>
       </div>
 
-      {/* ITEMS por categoría */}
+      <div className={s.listaProgress}>
+        <div className={s.lpTop}>
+          <span className={s.lpLabel}>Progreso</span>
+          <span className={s.lpPct}>{pct}%</span>
+          <button className={s.btnReset} onClick={resetAll}>↺ Reiniciar</button>
+        </div>
+        <div className={s.lpBar}>
+          <div className={s.lpFill} style={{ width: `${pct}%` }} />
+        </div>
+        <div className={s.lpStats}>
+          <div className={s.lps}><div className={s.lpsVal}>{done}</div><div className={s.lpsKey}>Comprados</div></div>
+          <div className={s.lps}><div className={`${s.lpsVal} ${s.lpsPending}`}>{total - done}</div><div className={s.lpsKey}>Pendientes</div></div>
+          <div className={s.lps}><div className={s.lpsVal}>{total}</div><div className={s.lpsKey}>Total</div></div>
+        </div>
+      </div>
+
       {loading
         ? <div className="page-loading">Cargando...</div>
         : Object.entries(grouped).map(([cat, catItems]) => {
             const freq = freqMap[cat]
             return (
-              <div key={cat} className="cat-section">
-                <div className={`cat-header ${freq === '3-4 dias' ? 'fresca' : ''}`}>
-                  <span className="cat-name">{cat}</span>
-                  {freq === '3-4 dias' && <span className="cat-freq">🔄 c/3–4 días</span>}
-                  <span className="cat-count">{catItems.filter(i => i.checked).length}/{catItems.length}</span>
+              <div key={cat} className={s.catSection}>
+                <div className={`${s.catHeader} ${freq === '3-4 dias' ? s.catHeaderFresca : ''}`}>
+                  <span className={s.catName}>{cat}</span>
+                  {freq === '3-4 dias' && <span className={s.catFreq}>🔄 c/3–4 días</span>}
+                  <span className={s.catCount}>{catItems.filter(i => i.checked).length}/{catItems.length}</span>
                 </div>
-                <div className="cat-items">
+                <div className={s.catItems}>
                   {catItems.map(item => (
                     <ShoppingItem
                       key={item.id}

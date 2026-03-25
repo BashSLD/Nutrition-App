@@ -1,0 +1,21 @@
+/* Modal.module.css */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex; align-items: flex-end; justify-content: center; z-index: 200; padding: 16px; }
+.modalCard { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 16px 16px; width: 100%; max-width: 480px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+.modalHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modalHeader h3 { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+.modalClose { background: none; border: none; font-size: 18px; color: var(--muted); cursor: pointer; }
+
+/* Medida Form */
+.medidaForm { display: flex; flex-direction: column; gap: 14px; }
+.mfGrid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+.mfField { display: flex; flex-direction: column; gap: 5px; }
+.mfLabel { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.mfUnit { font-weight: 400; text-transform: none; }
+.mfInput { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 14px; font-family: var(--font-body); width: 100%; }
+.mfInput:focus { outline: none; border-color: var(--accent); }
+.mfTextarea { resize: none; }
+.mfActions { display: flex; gap: 10px; padding-top: 4px; }
+
+@media (max-width: 400px) {
+  .mfGrid { grid-template-columns: 1fr; }
+}

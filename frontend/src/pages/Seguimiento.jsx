@@ -4,6 +4,9 @@ import { supabase } from '../lib/supabase'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import MedidaForm from '../components/MedidaForm'
 import { parseFecha, diffDias } from '../lib/dates'
+import s from '../styles/Seguimiento.module.css'
+import m from '../styles/Modal.module.css'
+import btn from '../styles/shared.module.css'
 
 export default function Seguimiento() {
   const { user, profile, refreshProfile } = useAuth()
@@ -95,52 +98,52 @@ export default function Seguimiento() {
   return (
     <div className="page seguimiento-page">
 
-      <div className="seg-header">
-        <h1 className="seg-title">{isEimy ? '📊 Mi progreso 💖' : '📊 Seguimiento'}</h1>
-        <button className="btn-primary" onClick={() => { setEditando(null); setFormError(null); setShowForm(true) }}>
+      <div className={s.segHeader}>
+        <h1 className={s.segTitle}>{isEimy ? '📊 Mi progreso 💖' : '📊 Seguimiento'}</h1>
+        <button className={btn.btnPrimary} onClick={() => { setEditando(null); setFormError(null); setShowForm(true) }}>
           + Registrar
         </button>
       </div>
 
       {error && (
-        <div className="page-error">
+        <div className={btn.pageError}>
           {error}
-          <button className="page-error-retry" onClick={() => { setError(null); fetchRegistros() }}>↺ Reintentar</button>
+          <button className={btn.pageErrorRetry} onClick={() => { setError(null); fetchRegistros() }}>↺ Reintentar</button>
         </div>
       )}
 
       {/* RESUMEN */}
       {ultimo && (
-        <div className="seg-summary">
-          <div className="ss-card">
-            <div className="ss-label">Peso actual</div>
-            <div className="ss-val">{ultimo.peso_kg} kg</div>
+        <div className={s.segSummary}>
+          <div className={s.ssCard}>
+            <div className={s.ssLabel}>Peso actual</div>
+            <div className={s.ssVal}>{ultimo.peso_kg} kg</div>
           </div>
           {ultimo.cintura_cm && (
-            <div className="ss-card">
-              <div className="ss-label">Cintura</div>
-              <div className="ss-val">{ultimo.cintura_cm} cm</div>
+            <div className={s.ssCard}>
+              <div className={s.ssLabel}>Cintura</div>
+              <div className={s.ssVal}>{ultimo.cintura_cm} cm</div>
             </div>
           )}
           {diferencia && (
-            <div className="ss-card">
-              <div className="ss-label">Cambio total</div>
-              <div className={`ss-val ${parseFloat(diferencia) < 0 ? 'ss-positive' : 'ss-negative'}`}>
+            <div className={s.ssCard}>
+              <div className={s.ssLabel}>Cambio total</div>
+              <div className={`${s.ssVal} ${parseFloat(diferencia) < 0 ? s.ssPositive : s.ssNegative}`}>
                 {parseFloat(diferencia) > 0 ? '+' : ''}{diferencia} kg
               </div>
             </div>
           )}
-          <div className="ss-card">
-            <div className="ss-label">Registros</div>
-            <div className="ss-val">{registros.length}</div>
+          <div className={s.ssCard}>
+            <div className={s.ssLabel}>Registros</div>
+            <div className={s.ssVal}>{registros.length}</div>
           </div>
         </div>
       )}
 
       {/* GRÁFICA PESO */}
       {chartData.length > 1 && (
-        <div className="chart-section">
-          <h3 className="chart-title">Peso (kg)</h3>
+        <div className={s.chartSection}>
+          <h3 className={s.chartTitle}>Peso (kg)</h3>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -155,8 +158,8 @@ export default function Seguimiento() {
 
       {/* GRÁFICA MEDIDAS */}
       {chartData.length > 1 && chartData.some(d => d.cintura_cm) && (
-        <div className="chart-section">
-          <h3 className="chart-title">Medidas (cm)</h3>
+        <div className={s.chartSection}>
+          <h3 className={s.chartTitle}>Medidas (cm)</h3>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -175,25 +178,25 @@ export default function Seguimiento() {
       )}
 
       {/* HISTORIAL */}
-      <div className="historial-section">
-        <h3 className="historial-title">Historial</h3>
+      <div className={s.historialSection}>
+        <h3 className={s.historialTitle}>Historial</h3>
         {loading
           ? <div className="page-loading">Cargando...</div>
           : registros.length === 0
-            ? <div className="historial-empty">Aún no hay registros — ¡empieza hoy!</div>
+            ? <div className={s.historialEmpty}>Aún no hay registros — ¡empieza hoy!</div>
             : [...registros].reverse().map(r => (
-                <div key={r.id} className="historial-row">
-                  <div className="hr-fecha">{parseFecha(r.fecha).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-                  <div className="hr-datos">
+                <div key={r.id} className={s.historialRow}>
+                  <div className={s.hrFecha}>{parseFecha(r.fecha).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+                  <div className={s.hrDatos}>
                     {r.peso_kg && <span>{r.peso_kg} kg</span>}
                     {r.cintura_cm && <span>C: {r.cintura_cm}</span>}
                     {r.cadera_cm && <span>Ca: {r.cadera_cm}</span>}
                     {r.abdomen_cm && <span>Ab: {r.abdomen_cm}</span>}
                   </div>
-                  {r.notas && <div className="hr-notas">{r.notas}</div>}
-                  <div className="hr-actions">
-                    <button className="hr-btn" onClick={() => { setEditando(r); setShowForm(true) }}>✏️</button>
-                    <button className="hr-btn hr-delete" onClick={() => handleDelete(r.id)}>🗑</button>
+                  {r.notas && <div className={s.hrNotas}>{r.notas}</div>}
+                  <div className={s.hrActions}>
+                    <button className={s.hrBtn} onClick={() => { setEditando(r); setShowForm(true) }}>✏️</button>
+                    <button className={`${s.hrBtn} ${s.hrDelete}`} onClick={() => handleDelete(r.id)}>🗑</button>
                   </div>
                 </div>
               ))
@@ -202,13 +205,13 @@ export default function Seguimiento() {
 
       {/* MODAL FORM */}
       {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className={m.modalOverlay} onClick={() => setShowForm(false)}>
+          <div className={m.modalCard} onClick={e => e.stopPropagation()}>
+            <div className={m.modalHeader}>
               <h3>{editando ? 'Editar registro' : 'Nuevo registro'}</h3>
-              <button className="modal-close" onClick={() => setShowForm(false)}>✕</button>
+              <button className={m.modalClose} onClick={() => setShowForm(false)}>✕</button>
             </div>
-            {formError && <div className="page-error" style={{ marginBottom: 16 }}>{formError}</div>}
+            {formError && <div className={btn.pageError} style={{ marginBottom: 16 }}>{formError}</div>}
             <MedidaForm
               initial={editando}
               onSave={handleSave}
