@@ -7,6 +7,7 @@ import Lista from './pages/Lista'
 import Seguimiento from './pages/Seguimiento'
 import Onboarding from './pages/Onboarding'
 import Navbar from './components/Navbar'
+import ScrollToTop from './components/ScrollToTop'
 
 // Temas por usuario
 import './styles/global.css'
@@ -37,6 +38,7 @@ export default function App() {
   return (
     <AuthProvider>
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={

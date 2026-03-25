@@ -189,25 +189,13 @@ export default function Plan() {
       {MEAL_TYPES.map(tipo => (
         mealsByType[tipo].length > 0 && (
           <div key={tipo} className={s.planSection}>
-            <div className={s.planSectionHeader}>
-              <span className={s.pshIcon}>{MEAL_ICONS[tipo]}</span>
-              <span className={s.pshTitle}>{MEAL_LABELS[tipo]}</span>
-              <span className={s.pshKcal}>
-                {(() => {
-                  const vals = mealsByType[tipo].map(m => m.kcal_total || 0).filter(v => v > 0)
-                  if (vals.length === 0) return null
-                  if (!isEimy || vals.length === 1) return `${vals.reduce((a, b) => a + b, 0)} kcal`
-                  const min = Math.min(...vals), max = Math.max(...vals)
-                  return min === max ? `${min} kcal` : `${min}–${max} kcal`
-                })()}
-              </span>
-            </div>
             <div>
               {mealsByType[tipo].map(meal => (
                 <MealCard
                   key={meal.id}
                   meal={meal}
                   isEimy={isEimy}
+                  icon={MEAL_ICONS[tipo]}
                   selected={selecciones[tipo] === meal.id}
                   onSelect={isEimy ? () => handleSelectMeal(tipo, meal.id) : null}
                   onUpdate={(updates) => handleUpdateMeal(meal.id, updates)}

@@ -78,6 +78,13 @@ export default function Home() {
     { label: 'Seguimiento', icon: '📊', path: '/seguimiento', desc: 'Peso, medidas y gráficas' },
   ]
 
+  const calcTMB = (editValues.peso_kg && editValues.altura_cm && editValues.edad) ? 
+    Math.round(editValues.sexo === 'femenino' ? 
+      (10 * editValues.peso_kg) + (6.25 * editValues.altura_cm) - (5 * editValues.edad) - 161 : 
+      (10 * editValues.peso_kg) + (6.25 * editValues.altura_cm) - (5 * editValues.edad) + 5
+    ) : 0;
+  const calcTDEE = calcTMB ? Math.round(calcTMB * (editValues.nivel_actividad || 1.2)) : 0;
+
   return (
     <div className="page home-page">
       <div className={s.homeHeader}>
@@ -219,6 +226,13 @@ export default function Home() {
                     value={editValues.meta_kcal}
                     onChange={e => setEditValues(v => ({ ...v, meta_kcal: e.target.value }))}
                   />
+                  {calcTDEE > 0 && (
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '8px', lineHeight: '1.4' }}>
+                      Tu mantenimiento (TDEE) es aprox <strong>{calcTDEE} kcal</strong>.<br/>
+                      📉 <strong>Déficit:</strong> Resta 300-500 kcal (Recomendado: {calcTDEE - 400}).<br/>
+                      📈 <strong>Superávit:</strong> Suma 300-500 kcal (Recomendado: {calcTDEE + 400}).
+                    </div>
+                  )}
                 </div>
               </div>
               {perfilError && <div className={btn.pageError}>{perfilError}</div>}

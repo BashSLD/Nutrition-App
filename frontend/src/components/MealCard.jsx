@@ -3,7 +3,7 @@ import s from '../styles/Plan.module.css'
 import btn from '../styles/shared.module.css'
 import SearchFoodModal from './SearchFoodModal'
 
-export default function MealCard({ meal, isEimy, selected, onSelect, onUpdate }) {
+export default function MealCard({ meal, isEimy, selected, onSelect, onUpdate, icon }) {
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [ingredientes, setIngredientes] = useState(meal.ingredientes || [])
@@ -38,7 +38,7 @@ export default function MealCard({ meal, isEimy, selected, onSelect, onUpdate })
       <div className={`${s.mealCardEimy} ${selected ? s.mealSelected : ''}`}>
         <div className={s.mceHead} onClick={() => setExpanded(!expanded)}>
           <div className={s.mceLetter}>{meal.nombre[0]}</div>
-          <div className={s.mceName}>{meal.nombre}</div>
+          <div className={s.mceName}>{icon && <span style={{marginRight: '8px'}}>{icon}</span>} {meal.nombre}</div>
           <div className={s.mceKcal}>{meal.kcal_total || totalKcal} kcal</div>
           {selected && <span className={s.mealSelBadge}>✓</span>}
         </div>
@@ -99,7 +99,7 @@ export default function MealCard({ meal, isEimy, selected, onSelect, onUpdate })
   return (
     <div className={`${s.mealCardBash} ${selected ? s.mealSelected : ''}`}>
       <div className={s.mcbHeader} onClick={() => setExpanded(!expanded)}>
-        <span className={s.mcbName}>{meal.nombre}</span>
+        <span className={s.mcbName}>{icon && <span style={{marginRight: '8px'}}>{icon}</span>} {meal.nombre}</span>
         <div className={s.mcbHeaderRight}>
           {selected && <span className={s.mealSelDot} />}
           <span className={s.mcbKcal}>{meal.kcal_total || totalKcal} kcal</span>
