@@ -37,9 +37,14 @@ export function useAuth() {
     })
   }
 
+  async function refreshProfile() {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) await fetchProfile(session.user.id)
+  }
+
   async function logout() {
     await supabase.auth.signOut()
   }
 
-  return { user, profile, loading, loginWithGoogle, logout }
+  return { user, profile, loading, loginWithGoogle, logout, refreshProfile }
 }

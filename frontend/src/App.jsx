@@ -5,15 +5,17 @@ import Home from './pages/Home'
 import Plan from './pages/Plan'
 import Lista from './pages/Lista'
 import Seguimiento from './pages/Seguimiento'
+import Onboarding from './pages/Onboarding'
 import Navbar from './components/Navbar'
 
 // Temas por usuario
 import './styles/global.css'
 
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, profile, loading, refreshProfile } = useAuth()
   if (loading) return <div className="loading">Cargando...</div>
   if (!user) return <Navigate to="/login" replace />
+  if (!profile) return <Onboarding user={user} onComplete={refreshProfile} />
   return children
 }
 
