@@ -1,3 +1,8 @@
+# ─── Contexto local (solo referencia, no subir) ──────────────
+CONTEXT.md
+DATA.md
+ROADMAP.md
+
 # ─── Env / Secrets ───────────────────────────────────────────
 .env
 .env.local
