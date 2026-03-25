@@ -2,6 +2,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { diffDias } from '../lib/dates'
 
 export default function Home() {
   const { user, profile, refreshProfile } = useAuth()
@@ -25,8 +26,7 @@ export default function Home() {
       .then(({ data }) => {
         if (data) {
           setLastRegistro(data)
-          const diff = Math.floor((new Date() - new Date(data.fecha)) / (1000 * 60 * 60 * 24))
-          setDiasSinRegistro(diff)
+          setDiasSinRegistro(diffDias(data.fecha))
         }
       })
   }, [user])

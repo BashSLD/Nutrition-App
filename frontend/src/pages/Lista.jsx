@@ -146,6 +146,7 @@ export default function Lista() {
         <div className="lp-top">
           <span className="lp-label">Progreso</span>
           <span className="lp-pct">{pct}%</span>
+          <button className="btn-reset" onClick={resetAll}>↺ Reiniciar</button>
         </div>
         <div className="lp-bar">
           <div className="lp-fill" style={{ width: `${pct}%` }} />
@@ -157,11 +158,6 @@ export default function Lista() {
         </div>
       </div>
 
-      {/* RESET */}
-      <div className="lista-actions">
-        <button className="btn-reset" onClick={resetAll}>↺ Reiniciar lista</button>
-      </div>
-
       {/* ITEMS por categoría */}
       {loading
         ? <div className="page-loading">Cargando...</div>
@@ -169,7 +165,7 @@ export default function Lista() {
             const freq = freqMap[cat]
             return (
               <div key={cat} className="cat-section">
-                <div className="cat-header">
+                <div className={`cat-header ${freq === '3-4 dias' ? 'fresca' : ''}`}>
                   <span className="cat-name">{cat}</span>
                   {freq === '3-4 dias' && <span className="cat-freq">🔄 c/3–4 días</span>}
                   <span className="cat-count">{catItems.filter(i => i.checked).length}/{catItems.length}</span>

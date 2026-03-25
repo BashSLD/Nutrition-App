@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function MealCard({ meal, isEimy, onUpdate }) {
+export default function MealCard({ meal, isEimy, selected, onSelect, onUpdate }) {
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [ingredientes, setIngredientes] = useState(meal.ingredientes || [])
@@ -21,11 +21,12 @@ export default function MealCard({ meal, isEimy, onUpdate }) {
 
   if (isEimy) {
     return (
-      <div className="meal-card-eimy">
+      <div className={`meal-card-eimy ${selected ? 'meal-selected' : ''}`}>
         <div className="mce-head" onClick={() => setExpanded(!expanded)}>
           <div className="mce-letter">{meal.nombre[0]}</div>
           <div className="mce-name">{meal.nombre}</div>
           <div className="mce-kcal">{meal.kcal_total || totalKcal} kcal</div>
+          {selected && <span className="meal-sel-badge">✓</span>}
         </div>
         {expanded && (
           <div className="mce-body">
@@ -49,10 +50,20 @@ export default function MealCard({ meal, isEimy, onUpdate }) {
             ))}
             <div className="mce-footer">
               <span className="mce-total">Total: <strong>{meal.kcal_total || totalKcal} kcal</strong></span>
-              {editing
-                ? <><button className="btn-save" onClick={saveChanges}>Guardar</button><button className="btn-cancel" onClick={() => { setIngredientes(meal.ingredientes); setEditing(false) }}>Cancelar</button></>
-                : <button className="btn-edit" onClick={() => setEditing(true)}>✏️ Editar</button>
-              }
+              <div className="mce-footer-actions">
+                {onSelect && (
+                  <button
+                    className={`btn-elegir ${selected ? 'btn-elegir-active' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); onSelect() }}
+                  >
+                    {selected ? '✓ Elegida' : 'Elegir esta'}
+                  </button>
+                )}
+                {editing
+                  ? <><button className="btn-save" onClick={saveChanges}>Guardar</button><button className="btn-cancel" onClick={() => { setIngredientes(meal.ingredientes); setEditing(false) }}>Cancelar</button></>
+                  : <button className="btn-edit" onClick={() => setEditing(true)}>✏️ Editar</button>
+                }
+              </div>
             </div>
           </div>
         )}
@@ -61,10 +72,13 @@ export default function MealCard({ meal, isEimy, onUpdate }) {
   }
 
   return (
-    <div className="meal-card-bash">
+    <div className={`meal-card-bash ${selected ? 'meal-selected' : ''}`}>
       <div className="mcb-header" onClick={() => setExpanded(!expanded)}>
         <span className="mcb-name">{meal.nombre}</span>
-        <span className="mcb-kcal">{meal.kcal_total || totalKcal} kcal</span>
+        <div className="mcb-header-right">
+          {selected && <span className="meal-sel-dot" />}
+          <span className="mcb-kcal">{meal.kcal_total || totalKcal} kcal</span>
+        </div>
       </div>
       {expanded && (
         <div className="mcb-body">

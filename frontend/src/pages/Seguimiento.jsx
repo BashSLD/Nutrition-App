@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import MedidaForm from '../components/MedidaForm'
+import { parseFecha, diffDias } from '../lib/dates'
 
 export default function Seguimiento() {
   const { user, profile, refreshProfile } = useAuth()
@@ -83,7 +84,7 @@ export default function Seguimiento() {
   }
 
   const chartData = registros.map(r => ({
-    fecha: new Date(r.fecha).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }),
+    fecha: parseFecha(r.fecha).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }),
     peso_kg: r.peso_kg,
     cintura_cm: r.cintura_cm,
     cadera_cm: r.cadera_cm,
@@ -182,7 +183,7 @@ export default function Seguimiento() {
             ? <div className="historial-empty">Aún no hay registros — ¡empieza hoy!</div>
             : [...registros].reverse().map(r => (
                 <div key={r.id} className="historial-row">
-                  <div className="hr-fecha">{new Date(r.fecha).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+                  <div className="hr-fecha">{parseFecha(r.fecha).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
                   <div className="hr-datos">
                     {r.peso_kg && <span>{r.peso_kg} kg</span>}
                     {r.cintura_cm && <span>C: {r.cintura_cm}</span>}
