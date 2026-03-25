@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Nutricional — Eimy ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--pink:#ff1aab;--pink2:#ff6ed8;--pink3:#ffc1ea;--pink4:#fff0fb;--purple:#9b1dff;--purple2:#d58bff;--hot:#ff0080;--yellow:#ffe600;--cyan:#00f0ff;--bg:#1a0020;--card:#2a0035;--card2:#380045;--text:#fff0fb;--muted:#d58bff;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;line-height:1.6;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 20%,rgba(255,26,171,.15) 0%,transparent 70%),radial-gradient(ellipse 50% 50% at 80% 80%,rgba(155,29,255,.15) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 60% 10%,rgba(0,240,255,.08) 0%,transparent 60%);pointer-events:none;z-index:0;}
+  body::after{content:'✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧';position:fixed;top:0;left:0;right:0;font-size:10px;color:rgba(255,230,0,.3);letter-spacing:20px;pointer-events:none;z-index:0;padding:8px;animation:sparkle 4s ease-in-out infinite alternate;}
+  @keyframes sparkle{from{opacity:.2}to{opacity:.6}}
+  .wrap{max-width:860px;margin:0 auto;padding:60px 24px 80px;position:relative;z-index:1;}
+  .header{text-align:center;margin-bottom:48px;}
+  .hstars{font-size:20px;letter-spacing:8px;color:var(--yellow);margin-bottom:12px;animation:sparkle 2s ease-in-out infinite alternate;}
+  .header h1{font-family:'Pacifico',cursive;font-size:clamp(56px,12vw,96px);background:linear-gradient(135deg,#ff1aab 0%,#ff6ed8 40%,#d58bff 70%,#00f0ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;filter:drop-shadow(0 0 20px rgba(255,26,171,.5));margin-bottom:8px;}
+  .hsub{font-size:13px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;}
+  .hbadge{display:inline-block;background:linear-gradient(90deg,var(--pink),var(--purple));color:white;font-size:12px;font-weight:900;padding:6px 20px;border-radius:50px;letter-spacing:.1em;box-shadow:0 0 20px rgba(255,26,171,.5);}
+  .deco{text-align:center;color:var(--pink2);font-size:16px;letter-spacing:6px;margin:20px 0;opacity:.6;}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:40px;}
+  .met{background:var(--card);border:1px solid rgba(255,110,216,.3);border-radius:20px;padding:20px 14px;text-align:center;position:relative;overflow:hidden;}
+  .met::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--purple));}
+  .met-label{font-size:10px;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;text-transform:uppercase;}
+  .met-val{font-family:'Pacifico',cursive;font-size:26px;color:var(--pink);line-height:1;}
+  .met-unit{font-size:10px;color:var(--muted);margin-top:4px;}
+  .met-def{font-size:10px;color:rgba(213,139,255,.6);margin-top:5px;line-height:1.3;}
+  .met.star{background:linear-gradient(135deg,#ff1aab22,#9b1dff33);border-color:var(--pink);box-shadow:0 0 20px rgba(255,26,171,.2);}
+  .met.star .met-val{color:var(--yellow);filter:drop-shadow(0 0 8px rgba(255,230,0,.6));}
+  .sec{margin-bottom:48px;animation:fadeUp .5s ease both;}
+  .sec:nth-child(2){animation-delay:.05s}.sec:nth-child(3){animation-delay:.1s}.sec:nth-child(4){animation-delay:.15s}.sec:nth-child(5){animation-delay:.2s}.sec:nth-child(6){animation-delay:.25s}.sec:nth-child(7){animation-delay:.3s}
+  .sh{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .si{font-size:24px;}
+  .st{font-family:'Pacifico',cursive;font-size:22px;background:linear-gradient(90deg,var(--pink),var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .sk{margin-left:auto;background:rgba(255,26,171,.15);border:1px solid var(--pink);color:var(--pink);font-size:12px;font-weight:900;padding:4px 14px;border-radius:50px;}
+  .opts{display:flex;flex-direction:column;gap:10px;}
+  .ocard{background:var(--card);border:1px solid rgba(255,110,216,.25);border-radius:20px;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+  .ocard:hover{border-color:var(--pink2);box-shadow:0 4px 24px rgba(255,26,171,.15);}
+  .ohead{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--card2);cursor:pointer;user-select:none;}
+  .olet{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Pacifico',cursive;font-size:14px;color:white;flex-shrink:0;box-shadow:0 0 12px rgba(255,26,171,.4);}
+  .oname{font-weight:900;font-size:14px;color:var(--text);flex:1;}
+  .okcal{font-size:12px;color:var(--pink2);font-weight:700;}
+  .obody{padding:0 20px 16px;display:none;}
+  .obody.open{display:block;}
+  .irow{display:grid;grid-template-columns:1fr 80px 66px;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,110,216,.1);align-items:start;}
+  .irow:last-of-type{border-bottom:none;}
+  .iname{font-size:13px;color:var(--text);}
+  .itip{font-size:11px;color:#7fff6e;margin-top:2px;font-style:italic;}
+  .iqty{font-size:12px;color:var(--muted);text-align:right;}
+  .ikcal{font-size:12px;color:var(--pink);text-align:right;font-weight:700;}
+  .itot{display:flex;justify-content:space-between;padding:10px 0 2px;border-top:1px solid rgba(255,26,171,.3);margin-top:4px;}
+  .itl{font-weight:900;font-size:13px;color:var(--text);}
+  .itkc{font-weight:900;font-size:14px;color:var(--yellow);}
+  .otip{background:rgba(155,29,255,.15);border-left:3px solid var(--purple2);border-radius:0 10px 10px 0;padding:10px 14px;margin-top:10px;font-size:12px;color:var(--purple2);font-style:italic;}
+  .alt-box{background:rgba(0,240,255,.05);border:1px dashed rgba(0,240,255,.3);border-radius:16px;padding:20px;margin-top:16px;}
+  .alt-box-title{font-size:11px;color:#00f0ff;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;font-weight:900;}
+  .alt-items{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .ai{background:rgba(0,240,255,.05);border-radius:12px;padding:12px 14px;}
+  .ainame{font-size:13px;font-weight:900;color:#00f0ff;margin-bottom:2px;}
+  .aiqty{font-size:11px;color:var(--muted);}
+  .aiprep{font-size:11px;color:rgba(0,240,255,.6);margin-top:2px;}
+  /* JUICE CHECKLIST */
+  .jgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .jcard{background:var(--card);border:1px solid rgba(255,110,216,.25);border-radius:20px;padding:20px 16px;position:relative;overflow:hidden;}
+  .jcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--purple));}
+  .jemoji{font-size:28px;margin-bottom:8px;display:block;}
+  .jname{font-family:'Pacifico',cursive;font-size:14px;color:var(--pink2);margin-bottom:2px;}
+  .jsub{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .jlist{list-style:none;}
+  .ji{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,110,216,.1);cursor:pointer;transition:opacity .15s;}
+  .ji:last-child{border-bottom:none;}
+  .ji.done{opacity:.35;}
+  .ji.done .jiname{text-decoration:line-through;}
+  .jchk{width:15px;height:15px;border:1px solid rgba(255,110,216,.5);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:background .15s,border-color .15s;}
+  .ji.done .jchk{background:var(--pink);border-color:var(--pink);color:white;}
+  .jiname{font-size:12px;color:var(--text);flex:1;}
+  .jiqty{font-size:11px;color:var(--pink);white-space:nowrap;font-weight:700;}
+  .jprog{height:3px;background:rgba(255,110,216,.15);margin-top:12px;border-radius:2px;overflow:hidden;}
+  .jprogf{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple));width:0%;transition:width .3s;}
+  .jreset{margin-top:8px;font-size:10px;color:var(--muted);cursor:pointer;letter-spacing:.1em;border:none;background:none;font-family:'Nunito',sans-serif;padding:0;}
+  .jreset:hover{color:var(--pink);}
+  .jnote{font-size:11px;color:var(--purple2);margin-top:8px;font-style:italic;}
+  /* COLACION */
+  .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .ccard{background:var(--card);border:1px solid rgba(255,110,216,.2);border-radius:20px;padding:20px;text-align:center;transition:transform .2s;}
+  .ccard:hover{transform:translateY(-4px);}
+  .cemoji{font-size:32px;margin-bottom:8px;display:block;}
+  .cname{font-weight:900;font-size:13px;color:var(--text);margin-bottom:4px;}
+  .cqty{font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .ckcal{font-size:14px;color:var(--pink);font-weight:900;}
+  /* NOTES */
+  .ngrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:48px;}
+  .ncard{background:var(--card);border:1px solid rgba(255,110,216,.2);border-radius:20px;padding:20px;}
+  .nl{font-size:11px;color:var(--pink);letter-spacing:.1em;text-transform:uppercase;font-weight:900;margin-bottom:6px;}
+  .nt{font-size:13px;color:var(--muted);}
+  .footer{text-align:center;margin-top:64px;}
+  .ft{font-family:'Pacifico',cursive;font-size:18px;color:var(--pink2);margin-bottom:8px;}
+  .fs{font-size:11px;color:var(--muted);letter-spacing:.1em;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  @media(max-width:600px){.metrics{grid-template-columns:repeat(2,1fr)}.jgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr}.ngrid{grid-template-columns:1fr}.alt-items{grid-template-columns:1fr}.irow{grid-template-columns:1fr 60px}.ikcal{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="header sec">
+    <div class="hstars">✦ ✧ ✦ ✧ ✦ ✧ ✦</div>
+    <h1>Eimy</h1>
+    <p class="hsub">24 años · 60 kg · 1.50 m · ¡Modo Bratz activado!</p>
+    <div class="hbadge">✨ PLAN NUTRICIONAL DÉFICIT 2026 ✨</div>
+  </header>
+  <div class="deco">♡ ♡ ♡ ♡ ♡</div>
+
+  <div class="metrics sec">
+    <div class="met"><div class="met-label">TMB</div><div class="met-val">1,380</div><div class="met-unit">kcal/día</div><div class="met-def">Lo que tu cuerpo gasta solo para existir en reposo.</div></div>
+    <div class="met"><div class="met-label">TDEE</div><div class="met-val">1,650</div><div class="met-unit">kcal/día</div><div class="met-def">Gasto real diario con tu actividad actual.</div></div>
+    <div class="met star"><div class="met-label">Meta ✦</div><div class="met-val">1,300</div><div class="met-unit">déficit −350 kcal</div></div>
+    <div class="met"><div class="met-label">Con gym</div><div class="met-val">1,400</div><div class="met-unit">kcal/día</div><div class="met-def">Sube al iniciar actividad física.</div></div>
+  </div>
+
+  <!-- DESAYUNOS -->
+  <div class="sec">
+    <div class="sh"><span class="si">🌸</span><span class="st">Desayunos</span><span class="sk">~330–425 kcal</span></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Sin presión de velocidad 💅 toca cada opción para ver los detalles</p>
+    <div class="opts">
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">A</div><div class="oname">Huevo con tortilla o pan tostado 🍳</div><div class="okcal">~390 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Huevo entero</div><div class="itip">Acompaña con: nopales, champiñones salteados, frijoles, aguacate o espinaca</div></div><div class="iqty">2 piezas</div><div class="ikcal">140</div></div>
+          <div class="irow"><div><div class="iname">Tortilla de maíz o pan tostado integral</div><div class="itip">Pan tostado: buscar menos de 5g azúcar por rebanada</div></div><div class="iqty">1–2 piezas</div><div class="ikcal">60–80</div></div>
+          <div class="irow"><div><div class="iname">Espinaca salteada</div></div><div class="iqty">50g</div><div class="ikcal">15</div></div>
+          <div class="irow"><div><div class="iname">Jitomate</div></div><div class="iqty">al gusto</div><div class="ikcal">15</div></div>
+          <div class="irow"><div><div class="iname">Yogur griego natural</div><div class="itip">Cualquier marca · mín. 10g proteína/150g</div></div><div class="iqty">150g</div><div class="ikcal">100</div></div>
+          <div class="irow"><div><div class="iname">Jugo Verde Ligero</div></div><div class="iqty">1 vaso</div><div class="ikcal">~60</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~390 kcal</span></div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">B</div><div class="oname">Avena cremosa con fruta 🍌</div><div class="okcal">~408 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Avena en hojuela</div><div class="itip">Acompaña con: canela, fruta picada encima</div></div><div class="iqty">40g</div><div class="ikcal">148</div></div>
+          <div class="irow"><div><div class="iname">Yogur griego natural</div><div class="itip">Cualquier marca · mín. 10g proteína/150g</div></div><div class="iqty">150g</div><div class="ikcal">100</div></div>
+          <div class="irow"><div><div class="iname">Plátano en rodajas</div></div><div class="iqty">½ pieza</div><div class="ikcal">45</div></div>
+          <div class="irow"><div><div class="iname">Chía</div></div><div class="iqty">10g</div><div class="ikcal">50</div></div>
+          <div class="irow"><div><div class="iname">Canela al gusto</div></div><div class="iqty">—</div><div class="ikcal">0</div></div>
+          <div class="irow"><div><div class="iname">Jugo Naranja Antiinflamatorio</div></div><div class="iqty">1 vaso</div><div class="ikcal">~65</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~408 kcal</span></div>
+          <div class="otip">💡 Mezcla la avena con el yogur desde la noche anterior (overnight oats). Por la mañana solo agrega la fruta — cero cocción.</div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">C</div><div class="oname">Tostadas de aguacate con huevo 🥑</div><div class="okcal">~329 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Tortillas de maíz tostadas o pan integral tostado</div><div class="itip">2 tortillas o 2 rebanadas de pan integral</div></div><div class="iqty">2 piezas</div><div class="ikcal">120</div></div>
+          <div class="irow"><div><div class="iname">Aguacate</div></div><div class="iqty">40g (~¼)</div><div class="ikcal">64</div></div>
+          <div class="irow"><div><div class="iname">Huevo pochado o estrellado</div><div class="itip">Acompaña con: jitomate cherry, champiñones o espinaca baby encima</div></div><div class="iqty">1 pieza</div><div class="ikcal">70</div></div>
+          <div class="irow"><div><div class="iname">Jitomate cherry + sal + limón</div></div><div class="iqty">al gusto</div><div class="ikcal">15</div></div>
+          <div class="irow"><div><div class="iname">Jugo Verde Ligero</div></div><div class="iqty">1 vaso</div><div class="ikcal">~60</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~329 kcal</span></div>
+          <div class="otip">💡 La más ligera. Si no llena, agrega el yogur como postre (+100 kcal).</div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">D</div><div class="oname">Bowl de yogur con granola 🍓</div><div class="okcal">~369 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Yogur griego natural</div></div><div class="iqty">150g</div><div class="ikcal">100</div></div>
+          <div class="irow"><div><div class="iname">Avena tostada en sartén seca</div><div class="itip">Acompaña con: fruta picada, miel mínima o canela</div></div><div class="iqty">25g</div><div class="ikcal">92</div></div>
+          <div class="irow"><div><div class="iname">Manzana verde picada</div></div><div class="iqty">80g</div><div class="ikcal">42</div></div>
+          <div class="irow"><div><div class="iname">Chía</div></div><div class="iqty">10g</div><div class="ikcal">50</div></div>
+          <div class="irow"><div><div class="iname">Miel (opcional)</div></div><div class="iqty">5g</div><div class="ikcal">15</div></div>
+          <div class="irow"><div><div class="iname">Jugo Digestivo Suave</div></div><div class="iqty">1 vaso</div><div class="ikcal">~70</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~369 kcal</span></div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">E</div><div class="oname">Quesadilla ligera con huevo 🌮</div><div class="okcal">~425 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Tortilla de maíz o pan tostado</div></div><div class="iqty">2 piezas</div><div class="ikcal">120</div></div>
+          <div class="irow"><div><div class="iname">Huevo revuelto</div><div class="itip">Acompaña con: frijoles, nopales o champiñones para que no sea solo huevo</div></div><div class="iqty">2 piezas</div><div class="ikcal">140</div></div>
+          <div class="irow"><div><div class="iname">Queso Oaxaca</div><div class="itip">Reducir a 20–25g porque tiene más grasa que el panela</div></div><div class="iqty">20–25g</div><div class="ikcal">60</div></div>
+          <div class="irow"><div><div class="iname">Chile + epazote al gusto</div></div><div class="iqty">—</div><div class="ikcal">5</div></div>
+          <div class="irow"><div><div class="iname">Yogur griego natural (aparte)</div></div><div class="iqty">150g</div><div class="ikcal">100</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~425 kcal</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMIDAS -->
+  <div class="sec">
+    <div class="sh"><span class="si">💖</span><span class="st">Comidas</span><span class="sk">~283–436 kcal</span></div>
+    <div class="opts">
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">A</div><div class="oname">Pollo a la plancha con arroz 🍗</div><div class="okcal">~436 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Pechuga de pollo</div><div class="itip">Acompaña con: limón, ajo, salsa verde o pico de gallo</div></div><div class="iqty">120g</div><div class="ikcal">200</div></div>
+          <div class="irow"><div><div class="iname">Arroz cocido</div><div class="itip">Ver alternativas al arroz abajo si no hay tiempo de cocinar</div></div><div class="iqty">70g</div><div class="ikcal">91</div></div>
+          <div class="irow"><div><div class="iname">Ensalada (lechuga, jitomate, pepino)</div></div><div class="iqty">libre</div><div class="ikcal">30</div></div>
+          <div class="irow"><div><div class="iname">Aceite de oliva</div></div><div class="iqty">5ml</div><div class="ikcal">45</div></div>
+          <div class="irow"><div><div class="iname">Jugo Digestivo Suave</div></div><div class="iqty">1 vaso</div><div class="ikcal">~70</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~436 kcal</span></div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">B</div><div class="oname">Sopa aguada de verduras con pollo 🥣</div><div class="okcal">~315 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Pollo desmenuzado (hervido)</div><div class="itip">Acompaña con: chile, cilantro, limón al servir</div></div><div class="iqty">100g</div><div class="ikcal">165</div></div>
+          <div class="irow"><div><div class="iname">Chayote + zanahoria + calabaza</div></div><div class="iqty">200g total</div><div class="ikcal">60</div></div>
+          <div class="irow"><div><div class="iname">Caldo de pollo natural (sin sal extra)</div></div><div class="iqty">300ml</div><div class="ikcal">30</div></div>
+          <div class="irow"><div><div class="iname">Tortilla de maíz o pan tostado</div></div><div class="iqty">1 pieza</div><div class="ikcal">60</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~315 kcal</span></div>
+          <div class="otip">💡 Ideal si el desayuno fue más cargado o si no hay mucha hambre.</div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">C</div><div class="oname">Espagueti con jitomate y pollo 🍝</div><div class="okcal">~420 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Espagueti cocido</div><div class="itip">Acompaña con: salsa jitomate natural con ajo y cebolla — evitar crema o queso rallado encima</div></div><div class="iqty">70g cocido</div><div class="ikcal">110</div></div>
+          <div class="irow"><div><div class="iname">Pechuga de pollo desmenuzada</div></div><div class="iqty">100g</div><div class="ikcal">165</div></div>
+          <div class="irow"><div><div class="iname">Salsa jitomate natural (jitomate + ajo + cebolla)</div></div><div class="iqty">al gusto</div><div class="ikcal">40</div></div>
+          <div class="irow"><div><div class="iname">Aceite de oliva</div></div><div class="iqty">5ml</div><div class="ikcal">45</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~360 kcal</span></div>
+          <div class="otip">💡 El espagueti tiene calorías similares al arroz — es un intercambio directo.</div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">D</div><div class="oname">Pescado al limón con verdura 🐟</div><div class="okcal">~388 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Tilapia o salmón</div><div class="itip">Acompaña con: ensalada de pepino y jitomate, o verdura al vapor</div></div><div class="iqty">120g</div><div class="ikcal">180–220</div></div>
+          <div class="irow"><div><div class="iname">Brócoli o ejotes salteados</div></div><div class="iqty">150g</div><div class="ikcal">55</div></div>
+          <div class="irow"><div><div class="iname">Arroz cocido o espagueti</div></div><div class="iqty">60g</div><div class="ikcal">78</div></div>
+          <div class="irow"><div><div class="iname">Limón + ajo + sal + aceite</div></div><div class="iqty">al gusto</div><div class="ikcal">55</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~368–408 kcal</span></div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">E</div><div class="oname">Tacos de res con frijoles 🌮</div><div class="okcal">~420 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Bistec de res en tiras</div><div class="itip">Acompaña con: salsa verde, limón, cilantro y cebolla</div></div><div class="iqty">100g</div><div class="ikcal">200</div></div>
+          <div class="irow"><div><div class="iname">Tortillas de maíz</div></div><div class="iqty">2 piezas</div><div class="ikcal">120</div></div>
+          <div class="irow"><div><div class="iname">Frijoles negros (sin manteca)</div></div><div class="iqty">60g</div><div class="ikcal">80</div></div>
+          <div class="irow"><div><div class="iname">Jitomate + cebolla + cilantro</div></div><div class="iqty">al gusto</div><div class="ikcal">20</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~420 kcal</span></div>
+        </div>
+      </div>
+
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet">F</div><div class="oname">Bowl de atún sin cocción 🥗</div><div class="okcal">~283 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Atún en agua (escurrido)</div><div class="itip">Acompaña con: aguacate, pepino o ensalada de jitomate</div></div><div class="iqty">100g</div><div class="ikcal">116</div></div>
+          <div class="irow"><div><div class="iname">Pepino en rodajas</div></div><div class="iqty">100g</div><div class="ikcal">15</div></div>
+          <div class="irow"><div><div class="iname">Aguacate</div></div><div class="iqty">40g</div><div class="ikcal">64</div></div>
+          <div class="irow"><div><div class="iname">Arroz cocido</div></div><div class="iqty">60g</div><div class="ikcal">78</div></div>
+          <div class="irow"><div><div class="iname">Limón + sal + chile en polvo</div></div><div class="iqty">al gusto</div><div class="ikcal">10</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~283 kcal</span></div>
+          <div class="otip">💡 Sin cocción. Perfecta para días calurosos o sin ganas de cocinar.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="alt-box">
+      <div class="alt-box-title">✦ Alternativas al arroz — opcionales, no lo sustituyen permanentemente</div>
+      <div class="alt-items">
+        <div class="ai"><div class="ainame">Papa hervida</div><div class="aiqty">120g</div><div class="aiprep">Hervir 15 min, sin vigilar</div></div>
+        <div class="ai"><div class="ainame">Camote hervido</div><div class="aiqty">100g</div><div class="aiprep">15–20 min · más fibra</div></div>
+        <div class="ai"><div class="ainame">Tortillas de maíz extra</div><div class="aiqty">1–2 piezas</div><div class="aiprep">Sin cocción</div></div>
+        <div class="ai"><div class="ainame">Pan tostado integral</div><div class="aiqty">1–2 rebanadas</div><div class="aiprep">Sin cocción</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SNACKS -->
+  <div class="sec">
+    <div class="sh"><span class="si">🍿</span><span class="st">Snacks y Tampa</span><span class="sk">con moderación</span></div>
+    <div class="opts">
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet" style="font-size:10px">SN</div><div class="oname">Fruta o verdura con tajín y limón 🍉</div><div class="okcal">~50–85 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Lo que haya disponible o se antoje</div><div class="itip">Pepino · jícama · sandía · mango · zanahoria en bastones · melón · naranja — cualquier fruta o verdura fresca funciona</div></div><div class="iqty">~150g</div><div class="ikcal">50–85</div></div>
+          <div class="irow"><div><div class="iname">Tajín + limón</div><div class="itip">Con chamoy va bien pero cuidar cantidad — tiene mucho sodio</div></div><div class="iqty">al gusto</div><div class="ikcal">5</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~55–90 kcal</span></div>
+        </div>
+      </div>
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet" style="font-size:10px">SN</div><div class="oname">Galletas Marías con dip 🍪</div><div class="okcal">~100–120 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Galletas Marías</div><div class="itip">Máximo 3 galletas · combinar con algo para no disparar hambre</div></div><div class="iqty">3 galletas</div><div class="ikcal">60</div></div>
+          <div class="irow"><div><div class="iname">Elige uno: crema de cacahuate natural</div><div class="itip">1 cucharadita (~10g) sobre las galletas — rico y saciante</div></div><div class="iqty">10g</div><div class="ikcal">60</div></div>
+          <div class="irow"><div><div class="iname">O: plátano con canela</div><div class="itip">Rodajas sobre las galletas · dulce natural</div></div><div class="iqty">½ plátano</div><div class="ikcal">45</div></div>
+          <div class="irow"><div><div class="iname">O: yogur griego como dip</div><div class="itip">Las galletas como cuchara con el yogur — funciona muy bien</div></div><div class="iqty">50g</div><div class="ikcal">33</div></div>
+          <div class="itot"><span class="itl">Total aprox.</span><span class="itkc">~100–120 kcal</span></div>
+        </div>
+      </div>
+      <div class="ocard">
+        <div class="ohead" onclick="tog(this)"><div class="olet" style="font-size:10px">SN</div><div class="oname">Cereal con leche 🥣</div><div class="okcal">~140 kcal</div></div>
+        <div class="obody">
+          <div class="irow"><div><div class="iname">Cereal</div><div class="itip">Buscar: menos de 8g azúcar por porción y más de 3g de fibra. La avena tostada del plan es mejor opción.</div></div><div class="iqty">25g</div><div class="ikcal">90</div></div>
+          <div class="irow"><div><div class="iname">Leche semidescremada</div><div class="itip">Medio vaso · contarla dentro del total del día</div></div><div class="iqty">100ml</div><div class="ikcal">50</div></div>
+          <div class="itot"><span class="itl">Total</span><span class="itkc">~140 kcal</span></div>
+          <div class="otip">💡 La avena tostada del Desayuno D cubre mejor este antojo con más proteína.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JUGOS -->
+  <div class="sec">
+    <div class="sh"><span class="si">🥤</span><span class="st">Jugos de Eimy</span></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Toca cada ingrediente para tacharlo mientras preparas 💅</p>
+    <div class="jgrid">
+
+      <div class="jcard">
+        <span class="jemoji">🌿</span>
+        <div class="jname">Verde Ligero</div>
+        <div class="jsub">Para abrir el día</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Espinaca</span><span class="jiqty">40g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Apio (tallos)</span><span class="jiqty">60g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Manzana verde</span><span class="jiqty">100g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Jugo de limón</span><span class="jiqty">20g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">200ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+        <div class="jnote">Suave, con poco apio ✨</div>
+      </div>
+
+      <div class="jcard">
+        <span class="jemoji">🥒</span>
+        <div class="jname">Digestivo Suave</div>
+        <div class="jsub">Después de la comida</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Pepino con cáscara</span><span class="jiqty">120g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Piña</span><span class="jiqty">100g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Chía hidratada</span><span class="jiqty">10g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">250ml</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Jengibre (opcional)</span><span class="jiqty">poquito</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+        <div class="jnote">Ayuda con digestión lenta 💆</div>
+      </div>
+
+      <div class="jcard">
+        <span class="jemoji">🧡</span>
+        <div class="jname">Naranja Antiinfl.</div>
+        <div class="jsub">Dulce y fácil</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Zanahoria</span><span class="jiqty">120g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Piña</span><span class="jiqty">80g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Cúrcuma en polvo</span><span class="jiqty">1g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Pimienta (opcional)</span><span class="jiqty">pizca</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">180ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+        <div class="jnote">La pimienta es opcional — activa la cúrcuma pero se puede omitir</div>
+      </div>
+
+      <div class="jcard">
+        <span class="jemoji">🌸</span>
+        <div class="jname">Rosa Hidratante</div>
+        <div class="jsub">Días calurosos</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Sandía sin semilla</span><span class="jiqty">150g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Pepino con cáscara</span><span class="jiqty">100g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Jugo de limón</span><span class="jiqty">15g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Menta fresca</span><span class="jiqty">unas hojas</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">150ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+        <div class="jnote">~50 kcal · ligero y muy refrescante 🌊</div>
+      </div>
+
+      <div class="jcard">
+        <span class="jemoji">💜</span>
+        <div class="jname">Morado Jamaica</div>
+        <div class="jsub">Antioxidante</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Concentrado de jamaica</span><span class="jiqty">80ml</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Uva morada o zarzamora</span><span class="jiqty">80g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Manzana verde</span><span class="jiqty">80g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Jugo de limón</span><span class="jiqty">15g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">150ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+        <div class="jnote">Concentrado: hervir jamaica en poca agua, guardar en refri hasta 1 semana 🫙</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COLACION -->
+  <div class="sec">
+    <div class="sh"><span class="si">🌙</span><span class="st">Colación nocturna</span><span class="sk">~100–130 kcal</span></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Solo si hay hambre real 💗 elige una:</p>
+    <div class="cgrid">
+      <div class="ccard"><span class="cemoji">🥛</span><div class="cname">Yogur griego natural</div><div class="cqty">100g</div><div class="ckcal">~100 kcal</div></div>
+      <div class="ccard"><span class="cemoji">🍎</span><div class="cname">Manzana mediana</div><div class="cqty">1 pieza</div><div class="ckcal">~95 kcal</div></div>
+      <div class="ccard"><span class="cemoji">🥜</span><div class="cname">Nueces o almendras</div><div class="cqty">15g</div><div class="ckcal">~90 kcal</div></div>
+    </div>
+  </div>
+
+  <div class="ngrid sec">
+    <div class="ncard"><div class="nl">💧 Hidratación</div><div class="nt">Bebe cuando tengas sed — tu cuerpo te lo pide. Con los jugos del plan, 1–1.5L de agua adicional es suficiente. Sin contar vasos ni forzar.</div></div>
+    <div class="ncard"><div class="nl">🥤 Jugos</div><div class="nt">No sustituyen comidas. Tómalos 15–20 min antes para abrir el apetito.</div></div>
+    <div class="ncard"><div class="nl">⚠️ Mínimo</div><div class="nt">No bajar de 1,200 kcal/día. Sin presión de velocidad al comer.</div></div>
+    <div class="ncard"><div class="nl">📊 Progreso</div><div class="nt">Pesar una vez por semana, misma hora, mismo día. No diario.</div></div>
+  </div>
+
+  <div class="footer">
+    <div class="deco">✦ ✧ ✦ ✧ ✦ ✧ ✦</div>
+    <div class="ft">¡Tú puedes, Eimy! 💖</div>
+    <div class="fs">PLAN NUTRICIONAL · DÉFICIT CALÓRICO · 2026</div>
+  </div>
+</div>
+<script>
+function tog(head){var b=head.nextElementSibling;b.classList.toggle('open');}
+function cj(item){item.classList.toggle('done');item.querySelector('.jchk').textContent=item.classList.contains('done')?'✓':'';up(item.closest('.jlist'));}
+function up(list){var t=list.querySelectorAll('.ji').length,d=list.querySelectorAll('.ji.done').length;list.parentElement.querySelector('.jprogf').style.width=(t?d/t*100:0)+'%';}
+function rj(btn){var c=btn.closest('.jcard');c.querySelectorAll('.ji').forEach(function(i){i.classList.remove('done');i.querySelector('.jchk').textContent='';});c.querySelector('.jprogf').style.width='0%';}
+document.querySelectorAll('.obody').forEach(function(b,i){if(i===0||i===5)b.classList.add('open');});
+</script>
+</body>
+</html>

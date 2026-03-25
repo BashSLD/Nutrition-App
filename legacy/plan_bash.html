@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Nutricional — Bash</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0a;--surface:#111;--surface2:#181818;--border:#222;--accent:#c8f135;--accent2:#7fff6e;--text:#f0f0f0;--muted:#666;--muted2:#333;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:14px;line-height:1.6;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(200,241,53,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,241,53,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .wrap{max-width:920px;margin:0 auto;padding:60px 24px 80px;position:relative;z-index:1;}
+  .tag{font-size:10px;letter-spacing:.2em;color:var(--accent);border:1px solid var(--accent);padding:4px 10px;display:inline-block;}
+  h1{font-family:'Syne',sans-serif;font-size:clamp(48px,8vw,80px);font-weight:800;line-height:.9;letter-spacing:-.03em;margin-top:16px;}
+  h1 span{color:var(--accent);}
+  .hsub{font-size:12px;color:var(--muted);margin-top:16px;letter-spacing:.1em;}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:40px 0 48px;}
+  .met{background:var(--surface);padding:24px 20px;}
+  .met-label{font-size:10px;letter-spacing:.15em;color:var(--muted);margin-bottom:8px;text-transform:uppercase;}
+  .met-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--accent);line-height:1;}
+  .met-unit{font-size:11px;color:var(--muted);margin-top:4px;}
+  .met-def{font-size:10px;color:var(--muted2);margin-top:6px;line-height:1.4;}
+  .met.hl{background:var(--accent);}
+  .met.hl .met-label{color:#1a2200;}
+  .met.hl .met-val{color:#0a0a0a;}
+  .met.hl .met-unit{color:#3a4a00;}
+  .sec{margin-bottom:48px;animation:fadeUp .5s ease both;}
+  .sec:nth-child(2){animation-delay:.05s}.sec:nth-child(3){animation-delay:.1s}.sec:nth-child(4){animation-delay:.15s}.sec:nth-child(5){animation-delay:.2s}.sec:nth-child(6){animation-delay:.25s}.sec:nth-child(7){animation-delay:.3s}
+  .sh{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .sn{font-size:10px;color:var(--muted);letter-spacing:.1em;}
+  .st{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+  .sk{margin-left:auto;font-size:11px;color:var(--accent);border:1px solid var(--accent);padding:3px 10px;}
+  .mcard{background:var(--surface);border:1px solid var(--border);margin-bottom:2px;}
+  .mrow{display:grid;grid-template-columns:1fr 100px 72px;gap:16px;padding:14px 20px;align-items:start;border-bottom:1px solid var(--border);transition:background .15s;}
+  .mrow:last-child{border-bottom:none;}
+  .mrow:hover{background:var(--surface2);}
+  .mn{color:var(--text);font-size:13px;}
+  .mt{font-size:11px;color:var(--accent2);margin-top:3px;font-style:italic;}
+  .mq{font-size:12px;color:var(--muted);text-align:right;}
+  .mk{font-size:12px;color:var(--accent);text-align:right;font-weight:500;}
+  .mtot{display:grid;grid-template-columns:1fr 100px 72px;gap:16px;padding:12px 20px;background:var(--surface2);border:1px solid var(--accent);margin-top:2px;}
+  .tl{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;}
+  .tk{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--accent);text-align:right;}
+  .note{background:var(--surface2);border-left:2px solid var(--accent);padding:12px 16px;margin-top:10px;font-size:12px;color:var(--muted);}
+  .alt-title{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px;}
+  .alt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);}
+  .alt-item{background:var(--surface);padding:14px 16px;}
+  .alt-name{font-size:13px;color:var(--text);margin-bottom:2px;}
+  .alt-qty{font-size:11px;color:var(--accent);}
+  .alt-prep{font-size:11px;color:var(--muted);margin-top:2px;}
+  .juice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--border);}
+  .jcard{background:var(--surface);padding:24px 20px;}
+  .jnum{font-size:10px;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;}
+  .jname{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:2px;}
+  .jsub{font-size:11px;color:var(--muted);margin-bottom:16px;}
+  .jlist{list-style:none;}
+  .ji{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--muted2);cursor:pointer;transition:opacity .15s;}
+  .ji:last-child{border-bottom:none;}
+  .ji.done{opacity:.4;}
+  .ji.done .jiname{text-decoration:line-through;}
+  .jchk{width:16px;height:16px;border:1px solid var(--muted);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:background .15s,border-color .15s;}
+  .ji.done .jchk{background:var(--accent);border-color:var(--accent);color:#0a0a0a;}
+  .jiname{font-size:12px;color:var(--text);flex:1;}
+  .jiqty{font-size:11px;color:var(--accent);white-space:nowrap;}
+  .jprog{height:2px;background:var(--border);margin-top:14px;border-radius:1px;overflow:hidden;}
+  .jprogf{height:100%;background:var(--accent);width:0%;transition:width .3s;}
+  .jreset{margin-top:10px;font-size:10px;color:var(--muted);cursor:pointer;letter-spacing:.1em;border:none;background:none;text-transform:uppercase;padding:0;}
+  .jreset:hover{color:var(--accent);}
+  .jnote{font-size:11px;color:var(--accent2);margin-top:8px;font-style:italic;}
+  .gym-block{background:var(--surface);border:1px solid var(--accent);padding:24px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;}
+  .gym-icon{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--accent);line-height:1;}
+  .gym-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;}
+  .gym-list{list-style:none;}
+  .gym-list li{font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--muted2);}
+  .gym-list li:last-child{border-bottom:none;}
+  .gym-list li span{color:var(--accent);}
+  .ngrid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--border);margin-top:48px;}
+  .ni{background:var(--surface);padding:20px;}
+  .nl{font-size:10px;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
+  .nt{font-size:12px;color:var(--muted);}
+  .footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;}
+  .ftag{font-size:10px;color:var(--muted);letter-spacing:.1em;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  @media(max-width:600px){.metrics{grid-template-columns:repeat(2,1fr)}.juice-grid{grid-template-columns:1fr}.ngrid{grid-template-columns:1fr}.alt-grid{grid-template-columns:1fr}.mrow{grid-template-columns:1fr 60px}.mk{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="sec">
+    <span class="tag">PLAN NUTRICIONAL / 2026</span>
+    <h1>BASH<br><span>DÉFICIT</span></h1>
+    <p class="hsub">34 AÑOS · 80 KG · 1.64 M · SEDENTARIO → GYM</p>
+  </header>
+
+  <div class="metrics sec">
+    <div class="met"><div class="met-label">TMB</div><div class="met-val">1,750</div><div class="met-unit">kcal/día</div><div class="met-def">Calorías que tu cuerpo quema solo para existir — respirar, bombear sangre, temperatura.</div></div>
+    <div class="met"><div class="met-label">TDEE</div><div class="met-val">2,100</div><div class="met-unit">kcal/día</div><div class="met-def">Gasto real diario con tu nivel de actividad. De aquí se resta el déficit.</div></div>
+    <div class="met hl"><div class="met-label">Meta diaria</div><div class="met-val">1,700</div><div class="met-unit">déficit −400 kcal</div></div>
+    <div class="met"><div class="met-label">Con gym</div><div class="met-val">1,850</div><div class="met-unit">kcal/día</div><div class="met-def">Sube al iniciar entrenamientos para proteger el músculo.</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><span class="sn">01</span><span class="st">Desayuno</span><span class="sk">~500 kcal</span></div>
+    <div class="mcard">
+      <div class="mrow"><div><div class="mn">Avena en hojuela</div><div class="mt">Acompaña con: canela, miel mínima o fruta picada encima</div></div><div class="mq">60g</div><div class="mk">220 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Yogur griego natural</div><div class="mt">Cualquier marca · mín. 10g proteína/150g · sin azúcar añadida excesiva</div></div><div class="mq">150g</div><div class="mk">100 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Plátano</div></div><div class="mq">1 pieza</div><div class="mk">90 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Chía</div></div><div class="mq">15g</div><div class="mk">75 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Jugo Verde Real o Rojo de Poder</div><div class="mt">Sin Birdman por la mañana</div></div><div class="mq">1 vaso</div><div class="mk">~80 kcal</div></div>
+    </div>
+    <div class="mtot"><div class="tl">Total desayuno</div><div></div><div class="tk">~565 kcal</div></div>
+    <div class="note">Días sin gym: omite el jugo o tómalo a media mañana para no exceder el total.</div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><span class="sn">02</span><span class="st">Comida</span><span class="sk">~620 kcal</span></div>
+    <div class="mcard">
+      <div class="mrow"><div><div class="mn">Pechuga de pollo o bistec de res</div><div class="mt">Acompaña con: limón, ajo asado, salsa verde, nopales o champiñones</div></div><div class="mq">150g</div><div class="mk">250–300</div></div>
+      <div class="mrow"><div><div class="mn">Arroz cocido</div><div class="mt">Blanco o integral · ver alternativas abajo si no hay tiempo</div></div><div class="mq">100g</div><div class="mk">130 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Brócoli o chayote al vapor</div><div class="mt">Acompaña con: gotas de limón y sal, o salteado con ajo</div></div><div class="mq">150g</div><div class="mk">50 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Aceite de oliva</div></div><div class="mq">5ml</div><div class="mk">45 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Tortilla de maíz</div><div class="mt">Opcional si ya tienes el arroz</div></div><div class="mq">1 pieza</div><div class="mk">60 kcal</div></div>
+    </div>
+    <div class="mtot"><div class="tl">Total comida</div><div></div><div class="tk">~585–635</div></div>
+    <div class="alt-title">// alternativas al arroz — opcionales, no lo sustituyen permanentemente</div>
+    <div class="alt-grid">
+      <div class="alt-item"><div class="alt-name">Papa hervida</div><div class="alt-qty">150g</div><div class="alt-prep">Hervir en agua 15 min, sin vigilar</div></div>
+      <div class="alt-item"><div class="alt-name">Camote hervido</div><div class="alt-qty">130g</div><div class="alt-prep">15–20 min · más fibra</div></div>
+      <div class="alt-item"><div class="alt-name">Tortillas extra</div><div class="alt-qty">2 piezas adicionales</div><div class="alt-prep">Sin cocción</div></div>
+      <div class="alt-item"><div class="alt-name">Espagueti cocido</div><div class="alt-qty">70g cocido</div><div class="alt-prep">Mismas calorías aprox. · salsa jitomate natural</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><span class="sn">03</span><span class="st">Cena</span><span class="sk">~380 kcal</span></div>
+    <div class="mcard">
+      <div class="mrow"><div><div class="mn">Huevo entero</div><div class="mt">Acompaña con: frijoles, nopales, champiñones, aguacate en rodajas o espinaca salteada</div></div><div class="mq">3 piezas</div><div class="mk">210 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Tortillas de maíz</div></div><div class="mq">2 piezas</div><div class="mk">120 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Jitomate + cebolla + chile</div></div><div class="mq">al gusto</div><div class="mk">30 kcal</div></div>
+    </div>
+    <div class="mtot"><div class="tl">Total cena</div><div></div><div class="tk">~360 kcal</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><span class="sn">04</span><span class="st">Snacks permitidos</span></div>
+    <div class="mcard">
+      <div class="mrow"><div><div class="mn">Galletas Marías</div><div class="mt">Máximo 4–5 piezas · cada 2–3 días sin problema</div></div><div class="mq">4–5 piezas</div><div class="mk">~80 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Pan dulce</div><div class="mt">1 pieza pequeña cada 15 días — no rompe el plan</div></div><div class="mq">1 pieza</div><div class="mk">~200 kcal</div></div>
+      <div class="mrow"><div><div class="mn">Fruta picada con tajín y limón</div><div class="mt">Mango o sandía ~100g · excelente opción, fibra y saciante</div></div><div class="mq">~150g</div><div class="mk">~80 kcal</div></div>
+    </div>
+  </div>
+
+  <div class="gym-block sec">
+    <div class="gym-icon">GYM</div>
+    <div>
+      <div class="gym-title">Ajustes días de entrenamiento</div>
+      <ul class="gym-list">
+        <li>Agrega <span>1 scoop Birdman</span> post-entreno en el Rojo de Poder → +120 kcal → ~1,820 kcal</li>
+        <li>Entrenamiento intenso: sube el <span>arroz a 130g</span> o equivalente</li>
+        <li>Birdman: <span>solo post-gym</span>, disuelto en agua o en Rojo de Poder</li>
+        <li>Al iniciar gym subir meta diaria a <span>~1,850 kcal</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec" style="margin-top:48px">
+    <div class="sh"><span class="sn">05</span><span class="st">Jugos — checklist de preparación</span></div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">Toca cada ingrediente para tacharlo mientras preparas tu jugo.</p>
+    <div class="juice-grid">
+      <div class="jcard">
+        <div class="jnum">JUGO 01</div><div class="jname">Verde Real</div><div class="jsub">Enfoque y Magnesio</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Espinaca (hojas y tallos)</span><span class="jiqty">60g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Apio (hojas y tallos)</span><span class="jiqty">100g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Manzana verde (con cáscara)</span><span class="jiqty">140g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Jugo de limón</span><span class="jiqty">30g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">250ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+      </div>
+      <div class="jcard">
+        <div class="jnum">JUGO 02</div><div class="jname">Rojo de Poder</div><div class="jsub">Pre-entreno / Nitratos</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Betabel (raíz rebanada)</span><span class="jiqty">80g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Hojas y tallos de betabel</span><span class="jiqty">70–100g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Zanahoria</span><span class="jiqty">120g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Jengibre en polvo</span><span class="jiqty">1–2g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Chía</span><span class="jiqty">15g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">300–350ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+        <div class="jnote">+ 1.5 scoops Birdman post-gym</div>
+      </div>
+      <div class="jcard">
+        <div class="jnum">JUGO 03</div><div class="jname">Antiinflamatorio</div><div class="jsub">Recuperación</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Zanahoria</span><span class="jiqty">150g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Piña</span><span class="jiqty">100g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Cúrcuma fresca (o 2g polvo)</span><span class="jiqty">5g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Pimienta negra (activa la cúrcuma)</span><span class="jiqty">pizca</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">200ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+      </div>
+      <div class="jcard">
+        <div class="jnum">JUGO 04</div><div class="jname">Digestivo</div><div class="jsub">Saciedad / Control de peso</div>
+        <ul class="jlist">
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Pepino (con cáscara)</span><span class="jiqty">150g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Piña</span><span class="jiqty">120g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Chía hidratada</span><span class="jiqty">15g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Jengibre fresco (o 1g polvo)</span><span class="jiqty">5g</span></li>
+          <li class="ji" onclick="cj(this)"><div class="jchk"></div><span class="jiname">Agua</span><span class="jiqty">300ml</span></li>
+        </ul>
+        <div class="jprog"><div class="jprogf"></div></div>
+        <button class="jreset" onclick="rj(this)">↺ reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ngrid sec">
+    <div class="ni"><div class="nl">TMB / TDEE</div><div class="nt">TMB = calorías en reposo absoluto. TDEE = gasto real con actividad. El déficit es comer menos que tu TDEE.</div></div>
+    <div class="ni"><div class="nl">Hidratación</div><div class="nt">Mínimo 2L de agua al día, independiente de los jugos.</div></div>
+    <div class="ni"><div class="nl">Yogur</div><div class="nt">Cualquier marca: mín. 10g proteína por 150g, sin azúcar añadida excesiva.</div></div>
+    <div class="ni"><div class="nl">Progreso</div><div class="nt">Pesar una vez por semana, misma hora, mismo día. No diario.</div></div>
+  </div>
+
+  <footer class="footer">
+    <span class="ftag">PLAN NUTRICIONAL · BASH · 2026</span>
+    <span class="ftag">DÉFICIT CALÓRICO — FASE 1</span>
+  </footer>
+</div>
+<script>
+function cj(item){item.classList.toggle('done');item.querySelector('.jchk').textContent=item.classList.contains('done')?'✓':'';up(item.closest('.jlist'));}
+function up(list){var t=list.querySelectorAll('.ji').length,d=list.querySelectorAll('.ji.done').length;list.parentElement.querySelector('.jprogf').style.width=(t?d/t*100:0)+'%';}
+function rj(btn){var c=btn.closest('.jcard');c.querySelectorAll('.ji').forEach(function(i){i.classList.remove('done');i.querySelector('.jchk').textContent='';});c.querySelector('.jprogf').style.width='0%';}
+</script>
+</body>
+</html>

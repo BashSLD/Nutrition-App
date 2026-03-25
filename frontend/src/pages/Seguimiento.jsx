@@ -5,40 +5,65 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import MedidaForm from '../components/MedidaForm'
 
 export default function Seguimiento() {
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [registros, setRegistros] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editando, setEditando] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [formError, setFormError] = useState(null)
   const isEimy = profile?.theme === 'eimy'
 
   const fetchRegistros = useCallback(async () => {
     if (!user) return
-    const { data } = await supabase
-      .from('registros')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('fecha', { ascending: true })
-    setRegistros(data || [])
-    setLoading(false)
+    setError(null)
+    try {
+      const { data, error: err } = await supabase
+        .from('registros')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('fecha', { ascending: true })
+      if (err) throw err
+      setRegistros(data || [])
+    } catch {
+      setError('No se pudo cargar el historial. Verifica tu conexión.')
+    } finally {
+      setLoading(false)
+    }
   }, [user])
 
   useEffect(() => { fetchRegistros() }, [fetchRegistros])
 
   async function handleSave(values) {
-    if (editando) {
-      await supabase.from('registros').update(values).eq('id', editando.id).eq('user_id', user.id)
-    } else {
-      await supabase.from('registros').upsert({ ...values, user_id: user.id }, { onConflict: 'user_id,fecha' })
+    setFormError(null)
+    try {
+      if (editando) {
+        const { error: err } = await supabase.from('registros').update(values).eq('id', editando.id).eq('user_id', user.id)
+        if (err) throw err
+      } else {
+        const { error: err } = await supabase.from('registros').upsert({ ...values, user_id: user.id }, { onConflict: 'user_id,fecha' })
+        if (err) throw err
+      }
+      if (values.peso_kg) {
+        await supabase.from('profiles').update({ peso_kg: values.peso_kg }).eq('id', user.id)
+        await refreshProfile()
+      }
+      setShowForm(false)
+      setEditando(null)
+      fetchRegistros()
+    } catch {
+      setFormError('No se pudo guardar el registro. Intenta de nuevo.')
     }
-    setShowForm(false)
-    setEditando(null)
-    fetchRegistros()
   }
 
   async function handleDelete(id) {
-    await supabase.from('registros').delete().eq('id', id).eq('user_id', user.id)
-    fetchRegistros()
+    try {
+      const { error: err } = await supabase.from('registros').delete().eq('id', id).eq('user_id', user.id)
+      if (err) throw err
+      fetchRegistros()
+    } catch {
+      setError('No se pudo eliminar el registro.')
+    }
   }
 
   const ultimo = registros[registros.length - 1]
@@ -71,10 +96,17 @@ export default function Seguimiento() {
 
       <div className="seg-header">
         <h1 className="seg-title">{isEimy ? '📊 Mi progreso 💖' : '📊 Seguimiento'}</h1>
-        <button className="btn-primary" onClick={() => { setEditando(null); setShowForm(true) }}>
+        <button className="btn-primary" onClick={() => { setEditando(null); setFormError(null); setShowForm(true) }}>
           + Registrar
         </button>
       </div>
+
+      {error && (
+        <div className="page-error">
+          {error}
+          <button className="page-error-retry" onClick={() => { setError(null); fetchRegistros() }}>↺ Reintentar</button>
+        </div>
+      )}
 
       {/* RESUMEN */}
       {ultimo && (
@@ -175,10 +207,11 @@ export default function Seguimiento() {
               <h3>{editando ? 'Editar registro' : 'Nuevo registro'}</h3>
               <button className="modal-close" onClick={() => setShowForm(false)}>✕</button>
             </div>
+            {formError && <div className="page-error" style={{ marginBottom: 16 }}>{formError}</div>}
             <MedidaForm
               initial={editando}
               onSave={handleSave}
-              onCancel={() => { setShowForm(false); setEditando(null) }}
+              onCancel={() => { setShowForm(false); setEditando(null); setFormError(null) }}
             />
           </div>
         </div>

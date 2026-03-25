@@ -13,17 +13,26 @@ export default function Plan() {
   const [meals, setMeals] = useState([])
   const [jugos, setJugos] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const isEimy = profile?.theme === 'eimy'
 
   const fetchData = useCallback(async () => {
     if (!user) return
-    const [mealsRes, jugosRes] = await Promise.all([
-      supabase.from('meals').select('*').eq('user_id', user.id).order('orden'),
-      supabase.from('jugos').select('*').eq('user_id', user.id).order('orden')
-    ])
-    setMeals(mealsRes.data || [])
-    setJugos(jugosRes.data || [])
-    setLoading(false)
+    setError(null)
+    try {
+      const [mealsRes, jugosRes] = await Promise.all([
+        supabase.from('meals').select('*').eq('user_id', user.id).order('orden'),
+        supabase.from('jugos').select('*').eq('user_id', user.id).order('orden')
+      ])
+      if (mealsRes.error) throw mealsRes.error
+      if (jugosRes.error) throw jugosRes.error
+      setMeals(mealsRes.data || [])
+      setJugos(jugosRes.data || [])
+    } catch {
+      setError('No se pudo cargar el plan. Verifica tu conexión.')
+    } finally {
+      setLoading(false)
+    }
   }, [user])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -40,15 +49,32 @@ export default function Plan() {
 
   if (loading) return <div className="page-loading">Cargando plan...</div>
 
+  if (error) return (
+    <div className="page">
+      <div className="page-error">
+        {error}
+        <button className="page-error-retry" onClick={fetchData}>↺ Reintentar</button>
+      </div>
+    </div>
+  )
+
   const mealsByType = MEAL_TYPES.reduce((acc, tipo) => {
     acc[tipo] = meals.filter(m => m.tipo === tipo)
     return acc
   }, {})
 
   const metaKcal = profile?.meta_kcal || 0
-  const tmb = isEimy ? 1380 : 1750
-  const tdee = isEimy ? 1650 : 2100
-  const metaGym = isEimy ? 1400 : 1850
+  const peso = profile?.peso_kg || 0
+  const altura = profile?.altura_cm || 0
+  const edad = profile?.edad || 0
+
+  const tmb = peso && altura && edad
+    ? Math.round(isEimy
+        ? 655 + (9.563 * peso) + (1.850 * altura) - (4.676 * edad)
+        : 66  + (13.716 * peso) + (5.003 * altura) - (6.755 * edad))
+    : 0
+  const tdee = tmb ? Math.round(tmb * 1.2) : 0
+  const metaGym = metaKcal ? metaKcal + (isEimy ? 100 : 150) : 0
 
   return (
     <div className="page plan-page">
@@ -78,7 +104,7 @@ export default function Plan() {
         <div className="metric-card metric-highlight">
           <div className="mc-label">Meta {isEimy ? '✦' : ''}</div>
           <div className="mc-val">{(metaKcal || (isEimy ? 1300 : 1700)).toLocaleString()}</div>
-          <div className="mc-unit">déficit {isEimy ? '−350' : '−400'} kcal</div>
+          <div className="mc-unit">{tdee && metaKcal ? `déficit −${tdee - metaKcal} kcal` : 'déficit kcal'}</div>
         </div>
         <div className="metric-card">
           <div className="mc-label">Con gym</div>

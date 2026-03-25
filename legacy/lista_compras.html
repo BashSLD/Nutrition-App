@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Compras — Bash & Eimy</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);--text:#f0f2ff;--muted:#8890b0;--muted2:#555e7a;
+  --green:#22c55e;--green-bg:rgba(34,197,94,.12);--green-border:rgba(34,197,94,.25);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.25);
+  --purple:#c084fc;--purple-bg:rgba(192,132,252,.12);--purple-border:rgba(192,132,252,.25);
+  --orange:#fb923c;--orange-bg:rgba(251,146,60,.12);--orange-border:rgba(251,146,60,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.1);--yellow-border:rgba(251,191,36,.25);
+  --pink:#f472b6;--pink-bg:rgba(244,114,182,.12);--pink-border:rgba(244,114,182,.25);
+  --accent:#6366f1;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;}
+
+  /* BG GLOW */
+  body::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,.08) 0%,transparent 70%);pointer-events:none;z-index:0;}
+  body::after{content:'';position:fixed;bottom:-200px;right:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(192,132,252,.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 80px;position:relative;z-index:1;}
+
+  /* TOP BAR */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
+  .topbar-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;}
+  .topbar-date{font-size:11px;color:var(--muted2);}
+
+  /* HERO */
+  .hero{margin-bottom:28px;}
+  .hero h1{font-size:clamp(28px,5vw,38px);font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-.02em;margin-bottom:6px;}
+  .hero-sub{font-size:13px;color:var(--muted);}
+
+  /* PROGRESS CARD */
+  .prog-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px 22px;margin-bottom:24px;}
+  .prog-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .prog-label{font-size:13px;font-weight:600;color:var(--text);}
+  .prog-count{font-size:22px;font-weight:800;color:var(--accent);}
+  .prog-bar{height:8px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-bottom:10px;}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:99px;width:0%;transition:width .4s cubic-bezier(.4,0,.2,1);}
+  .prog-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .pstat{background:var(--surface2);border-radius:12px;padding:12px;text-align:center;}
+  .pstat-val{font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px;}
+  .pstat-label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+
+  /* LEGEND */
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+  .leg{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--muted);}
+  .legdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+  /* CATEGORY */
+  .cat{margin-bottom:20px;}
+  .cat-header{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;cursor:pointer;user-select:none;transition:background .15s;}
+  .cat-header:hover{background:var(--surface2);}
+  .cat-header.collapsed{border-radius:16px;}
+  .cat-icon{font-size:18px;flex-shrink:0;}
+  .cat-name{font-size:14px;font-weight:700;color:var(--text);flex:1;}
+  .cat-meta{font-size:11px;color:var(--muted);margin-right:8px;}
+  .cat-chev{font-size:12px;color:var(--muted);transition:transform .2s;}
+  .cat-header.collapsed .cat-chev{transform:rotate(-90deg);}
+  .cat-body{border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;overflow:hidden;background:var(--surface);}
+  .cat-body.hidden{display:none;}
+
+  /* ITEM */
+  .item{display:grid;grid-template-columns:48px 1fr auto;gap:0;align-items:center;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+  .item:last-child{border-bottom:none;}
+  .item:hover{background:var(--surface2);}
+  .item.checked{opacity:.5;}
+  .item.checked .iname{text-decoration:line-through;color:var(--muted2);}
+
+  .chk-wrap{display:flex;align-items:center;justify-content:center;}
+  .chk{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:transparent;}
+  .item.checked .chk{background:var(--accent);border-color:var(--accent);}
+  .chk-mark{display:none;color:white;font-size:12px;font-weight:700;}
+  .item.checked .chk-mark{display:block;}
+
+  .iinfo{min-width:0;}
+  .iname{font-size:13px;font-weight:600;color:var(--text);}
+  .inote{font-size:11px;color:var(--muted);margin-top:1px;}
+
+  .iright{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+  .iqty{font-size:12px;font-weight:700;color:var(--text);}
+  .ibadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;}
+  .b-both{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+  .b-bash{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);}
+  .b-eimy{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);}
+  .b-juice{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border);}
+  .b-opt{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border);}
+
+  /* NOTES */
+  .notes-section{margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .notes-header{padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .notes-icon{font-size:16px;}
+  .note-item{display:flex;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);align-items:flex-start;}
+  .note-item:last-child{border-bottom:none;}
+  .note-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0;}
+  .note-text{font-size:12px;color:var(--muted);line-height:1.5;}
+
+  /* FOOTER */
+  .footer{margin-top:32px;text-align:center;}
+  .footer-text{font-size:11px;color:var(--muted2);}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .cat{animation:fadeUp .35s ease both;}
+  .cat:nth-child(1){animation-delay:.03s}.cat:nth-child(2){animation-delay:.06s}.cat:nth-child(3){animation-delay:.09s}.cat:nth-child(4){animation-delay:.12s}.cat:nth-child(5){animation-delay:.15s}.cat:nth-child(6){animation-delay:.18s}
+  @media(max-width:560px){
+    .prog-stats{grid-template-columns:repeat(2,1fr)}
+    .item{grid-template-columns:42px 1fr;align-items:start;}
+    .iright{flex-direction:row;align-items:center;flex-wrap:wrap;gap:4px;margin-top:5px;}
+    .iqty{font-size:11px;background:var(--surface3);padding:2px 8px;border-radius:99px;color:var(--text);}
+    .ibadge{font-size:10px;}
+    .legend{gap:6px;}
+    .leg{font-size:10px;padding:4px 10px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <span class="topbar-title">Lista de compras · 2026</span>
+    <span class="topbar-date">Bash & Eimy</span>
+  </div>
+
+  <div class="hero">
+    <h1>Despensa semanal 🛒</h1>
+    <p class="hero-sub">Plan déficit calórico · dos personas · una semana</p>
+  </div>
+
+  <!-- FREQ CARDS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">📦 Compra grande</div>
+      <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px;">Cada 7 días</div>
+      <div style="font-size:12px;color:var(--muted);">Proteínas, lácteos, carbohidratos, latas, especias y semillas.</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid rgba(34,197,94,.25);border-radius:16px;padding:16px 18px;">
+      <div style="font-size:11px;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">🥬 Reposición fresca</div>
+      <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px;">Cada 3–4 días</div>
+      <div style="font-size:12px;color:var(--muted);">Verdura, fruta y hierbas frescas para jugos y comidas.</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-card">
+    <div class="prog-top">
+      <span class="prog-label">Progreso de compra</span>
+      <span class="prog-count" id="pct">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="pfill"></div></div>
+    <div class="prog-stats">
+      <div class="pstat"><div class="pstat-val" id="pdone">0</div><div class="pstat-label">Comprados</div></div>
+      <div class="pstat"><div class="pstat-val" id="pleft" style="color:var(--yellow)">0</div><div class="pstat-label">Pendientes</div></div>
+      <div class="pstat"><div class="pstat-val" id="ptotal">0</div><div class="pstat-label">Total</div></div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="leg"><div class="legdot" style="background:#22c55e"></div>Para los dos</div>
+    <div class="leg"><div class="legdot" style="background:#60a5fa"></div>Bash</div>
+    <div class="leg"><div class="legdot" style="background:#c084fc"></div>Eimy</div>
+    <div class="leg"><div class="legdot" style="background:#fb923c"></div>Jugos</div>
+    <div class="leg"><div class="legdot" style="background:#fbbf24"></div>Opcional</div>
+  </div>
+
+  <!-- PROTEINAS -->
+  <div class="cat">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-icon">🥩</span><span class="cat-name">Proteínas</span>
+      <span class="cat-meta">5 artículos</span><span class="cat-chev">▾</span>
+    </div>
+    <div class="cat-body">
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Pechuga de pollo</div><div class="iright"><div class="iqty">1 kg</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Carne de res</div><div class="inote">bistec o molida</div><div class="iright"><div class="iqty">500g</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Huevo</div><div class="inote">grado A</div><div class="iright"><div class="iqty">18–24 pzas</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Atún en agua</div><div class="inote">lata, escurrido</div><div class="iright"><div class="iqty">2 latas</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Salmón o tilapia</div><div class="inote">1 vez por semana</div><div class="iright"><div class="iqty">300g</div><div class="ibadge b-opt">Opcional</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- LACTEOS -->
+  <div class="cat">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-icon">🥛</span><span class="cat-name">Lácteos</span>
+      <span class="cat-meta">3 artículos</span><span class="cat-chev">▾</span>
+    </div>
+    <div class="cat-body">
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Yogur griego natural</div><div class="inote">mín. 10g proteína/150g · sin azúcar añadida excesiva</div><div class="iright"><div class="iqty">7–10 pzas</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Queso Oaxaca o asadero</div><div class="inote">para quesadillas · porción 20–25g<div class="iright"><div class="iqty">150g</div><div class="ibadge b-eimy">Eimy</div></div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Crema de cacahuate natural</div><div class="inote">snack con galletas Marías · sin azúcar añadida<div class="iright"><div class="iqty">1 frasco</div><div class="ibadge b-eimy">Eimy</div></div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Leche semidescremada</div><div class="inote">opcional para cereal o avena</div><div class="iright"><div class="iqty">500ml</div><div class="ibadge b-opt">Opcional</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- CARBOHIDRATOS -->
+  <div class="cat">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-icon">🌾</span><span class="cat-name">Carbohidratos</span>
+      <span class="cat-meta">7 artículos</span><span class="cat-chev">▾</span>
+    </div>
+    <div class="cat-body">
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Avena en hojuela</div><div class="iright"><div class="iqty">500g</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Arroz blanco o integral</div><div class="iright"><div class="iqty">500g</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Tortillas de maíz</div><div class="iright"><div class="iqty">1 kg</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Pan integral</div><div class="inote">alternativa a tortillas · &lt;5g azúcar por rebanada</div><div class="iright"><div class="iqty">1 barra</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Espagueti</div><div class="inote">alternativa al arroz</div><div class="iright"><div class="iqty">250g</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Frijoles negros</div><div class="inote">bolsa o lata · sin manteca</div><div class="iright"><div class="iqty">250g</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Papa o camote</div><div class="inote">alternativa al arroz cuando no hay tiempo de cocinarlo</div><div class="iright"><div class="iqty">500g</div><div class="ibadge b-opt">Opcional</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- VERDURAS COMIDAS -->
+  <div class="cat">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-icon">🥦</span><span class="cat-name">Verduras — comidas</span>
+      <span class="cat-meta" style="color:var(--green)">🔄 c/3–4 días</span><span class="cat-chev">▾</span>
+    </div>
+    <div class="cat-body">
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Brócoli</div><div class="iright"><div class="iqty">500g</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Chayote</div><div class="iright"><div class="iqty">3 pzas</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Jitomate</div><div class="iright"><div class="iqty">500g</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Cebolla blanca</div><div class="iright"><div class="iqty">3 pzas</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Chile</div><div class="iright"><div class="iqty">1 manojo</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Pepino</div><div class="inote">también para jugos de Eimy</div><div class="iright"><div class="iqty">4 pzas</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Aguacate</div><div class="iright"><div class="iqty">2 pzas</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Lechuga o espinaca baby</div><div class="iright"><div class="iqty">200g</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Ejotes o champiñones</div><div class="inote">acompañamiento para el huevo</div><div class="iright"><div class="iqty">200g</div><div class="ibadge b-opt">Opcional</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- FRUTAS JUGOS -->
+  <div class="cat">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-icon">🍊</span><span class="cat-name">Frutas y verduras — jugos</span>
+      <span class="cat-meta" style="color:var(--green)">🔄 c/3–4 días</span><span class="cat-chev">▾</span>
+    </div>
+    <div class="cat-body">
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Espinaca</div><div class="inote">Verde Real (Bash) + Verde Ligero (Eimy)</div><div class="iright"><div class="iqty">300g</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Apio</div><div class="inote">Verde Real (Bash) + Verde Ligero (Eimy)</div><div class="iright"><div class="iqty">1 manojo</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Manzana verde</div><div class="inote">jugos ambos + snack</div><div class="iright"><div class="iqty">6 pzas</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Betabel con hojas</div><div class="inote">Rojo de Poder (Bash)</div><div class="iright"><div class="iqty">700g</div><div class="ibadge b-bash">Bash</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Zanahoria</div><div class="inote">jugos ambos + comidas</div><div class="iright"><div class="iqty">1 kg</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Piña</div><div class="inote">Antiinflamatorio + Digestivo</div><div class="iright"><div class="iqty">1 pieza med.</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Limones</div><div class="iright"><div class="iqty">12 pzas</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Plátano</div><div class="inote">desayuno + colación</div><div class="iright"><div class="iqty">6 pzas</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Sandía</div><div class="inote">Rosa Hidratante + snack tajín</div><div class="iright"><div class="iqty">½ pieza</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Uva morada o zarzamora</div><div class="inote">Morado Jamaica (Eimy)</div><div class="iright"><div class="iqty">150g</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Jamaica seca</div><div class="inote">para concentrado — se hace 1 vez, dura 1 semana en refri</div><div class="iright"><div class="iqty">50g</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- SEMILLAS -->
+  <div class="cat">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-icon">🫙</span><span class="cat-name">Semillas, aceites y especias</span>
+      <span class="cat-meta">9 artículos</span><span class="cat-chev">▾</span>
+    </div>
+    <div class="cat-body">
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Chía</div><div class="iright"><div class="iqty">200g</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Aceite de oliva</div><div class="iright"><div class="iqty">250ml</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Nueces o almendras</div><div class="inote">colación nocturna Eimy</div><div class="iright"><div class="iqty">100g</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Jengibre fresco o en polvo</div><div class="inote">compra si no tienes</div><div class="iright"><div class="iqty">1 trozo/frasco</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Cúrcuma en polvo</div><div class="inote">dura semanas · compra si no tienes</div><div class="iright"><div class="iqty">1 frasco</div><div class="ibadge b-juice">Jugos</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Pimienta negra molida</div><div class="inote">para Bash · dura semanas</div><div class="iright"><div class="iqty">1 frasco</div><div class="ibadge b-bash">Bash</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Canela en polvo</div><div class="inote">avena Eimy · dura semanas</div><div class="iright"><div class="iqty">1 frasco</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Menta fresca</div><div class="inote">Rosa Hidratante (Eimy)</div><div class="iright"><div class="iqty">1 manojo</div><div class="ibadge b-eimy">Eimy</div></div></div></div>
+      <div class="item" onclick="chk(this)"><div class="chk-wrap"><div class="chk"><span class="chk-mark">✓</span></div></div><div class="iinfo"><div class="iname">Galletas Marías</div><div class="inote">snack ocasional</div><div class="iright"><div class="iqty">1 paquete</div><div class="ibadge b-both">Para los dos</div></div></div></div>
+    </div>
+  </div>
+
+  <div class="notes-section">
+    <div class="notes-header"><span class="notes-icon">📌</span> Notas de compra</div>
+    <div class="note-item"><div class="note-dot"></div><div class="note-text">Cúrcuma, pimienta, canela y jengibre duran varias semanas — compra solo si no los tienes.</div></div>
+    <div class="note-item"><div class="note-dot"></div><div class="note-text">Salmón y tilapia son opcionales según el presupuesto de esa semana.</div></div>
+    <div class="note-item"><div class="note-dot"></div><div class="note-text">Papa y camote son alternativas al arroz, no lo reemplazan permanentemente. Son para cuando no hay tiempo de cocinarlo.</div></div>
+    <div class="note-item"><div class="note-dot"></div><div class="note-text">El pepino cubre comidas y jugos de Eimy — las 4 piezas alcanzan para ambos usos.</div></div>
+    <div class="note-item"><div class="note-dot"></div><div class="note-text">Jamaica: hacer concentrado una sola vez, guardar en refri hasta 1 semana. Solo usar los ml necesarios por jugo.</div></div>
+    <div class="note-item"><div class="note-dot"></div><div class="note-text">Yogur griego: cualquier marca que cumpla mín. 10g proteína/150g y sin azúcar añadida excesiva.</div></div>
+  </div>
+
+  <div class="footer" style="margin-top:32px">
+    <p class="footer-text">Lista de compras · Bash & Eimy · Plan déficit 2026</p>
+  </div>
+</div>
+
+<script>
+var total=0,done=0;
+function init(){total=document.querySelectorAll('.item').length;upd();}
+function chk(el){el.classList.toggle('checked');done=document.querySelectorAll('.item.checked').length;upd();}
+function upd(){var pct=total?Math.round(done/total*100):0;document.getElementById('pfill').style.width=pct+'%';document.getElementById('pct').textContent=pct+'%';document.getElementById('pdone').textContent=done;document.getElementById('pleft').textContent=total-done;document.getElementById('ptotal').textContent=total;}
+function toggleCat(header){header.classList.toggle('collapsed');var body=header.nextElementSibling;body.classList.toggle('hidden');}
+init();
+</script>
+</body>
+</html>

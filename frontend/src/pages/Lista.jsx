@@ -20,16 +20,24 @@ export default function Lista() {
   const [tab, setTab] = useState('compartida')
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
 
   const fetchItems = useCallback(async () => {
-    const { data } = await supabase
-      .from('lista_items')
-      .select('*')
-      .eq('owner', tab)
-      .order('categoria')
-    setItems(data || [])
-    setLoading(false)
+    setError(null)
+    try {
+      const { data, error: err } = await supabase
+        .from('lista_items')
+        .select('*')
+        .eq('owner', tab)
+        .order('categoria')
+      if (err) throw err
+      setItems(data || [])
+    } catch {
+      setError('No se pudo cargar la lista. Verifica tu conexión.')
+    } finally {
+      setLoading(false)
+    }
   }, [tab])
 
   useEffect(() => { setLoading(true); fetchItems() }, [fetchItems])
@@ -58,10 +66,15 @@ export default function Lista() {
   }
 
   async function resetAll() {
-    await supabase.from('lista_items')
-      .update({ checked: false, checked_by: null })
-      .eq('owner', tab)
-    fetchItems()
+    try {
+      const { error: err } = await supabase.from('lista_items')
+        .update({ checked: false, checked_by: null })
+        .eq('owner', tab)
+      if (err) throw err
+      fetchItems()
+    } catch {
+      setError('No se pudo reiniciar la lista.')
+    }
   }
 
   // Agrupar por categoría
@@ -93,6 +106,13 @@ export default function Lista() {
           </span>
         )}
       </div>
+
+      {error && (
+        <div className="page-error">
+          {error}
+          <button className="page-error-retry" onClick={fetchItems}>↺ Reintentar</button>
+        </div>
+      )}
 
       {/* TABS */}
       <div className="lista-tabs">
