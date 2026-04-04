@@ -21,8 +21,8 @@ function ProtectedRoute({ children }) {
 }
 
 function AppLayout({ children }) {
-  const { profile } = useAuth()
-  const theme = profile?.theme || 'bash'
+  const { viewingProfile } = useAuth()
+  const theme = viewingProfile?.theme || 'bash'
 
   return (
     <div className={`app theme-${theme}`} data-theme={theme}>
