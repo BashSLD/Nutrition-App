@@ -9,23 +9,29 @@ import m from '../styles/Modal.module.css'
 import btn from '../styles/shared.module.css'
 
 export default function Seguimiento() {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, refreshProfile, viewingProfile, viewUserId, viewingOther } = useAuth()
   const [registros, setRegistros] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editando, setEditando] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [formError, setFormError] = useState(null)
-  const isEimy = profile?.theme === 'eimy'
+  const [showLimpiar, setShowLimpiar] = useState(false)
+  const [limpiarDesde, setLimpiarDesde] = useState('')
+  const [limpiarHasta, setLimpiarHasta] = useState('')
+  const [limpiarCount, setLimpiarCount] = useState(null)
+  const [limpiarLoading, setLimpiarLoading] = useState(false)
+  const [limpiarError, setLimpiarError] = useState(null)
+  const isEimy = viewingProfile?.theme === 'eimy'
 
   const fetchRegistros = useCallback(async () => {
-    if (!user) return
+    if (!user || !viewUserId) return
     setError(null)
     try {
       const { data, error: err } = await supabase
         .from('registros')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', viewUserId)
         .order('fecha', { ascending: true })
       if (err) throw err
       setRegistros(data || [])
@@ -34,7 +40,7 @@ export default function Seguimiento() {
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, viewUserId])
 
   useEffect(() => { fetchRegistros() }, [fetchRegistros])
 
@@ -70,6 +76,49 @@ export default function Seguimiento() {
     }
   }
 
+  async function contarRegistros() {
+    if (!limpiarDesde || !limpiarHasta) return
+    const { count } = await supabase
+      .from('registros')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('fecha', limpiarDesde)
+      .lte('fecha', limpiarHasta)
+    setLimpiarCount(count ?? 0)
+  }
+
+  async function handleLimpiar() {
+    if (!limpiarDesde || !limpiarHasta || limpiarCount === 0) return
+    setLimpiarLoading(true)
+    setLimpiarError(null)
+    try {
+      const { error: err } = await supabase
+        .from('registros')
+        .delete()
+        .eq('user_id', user.id)
+        .gte('fecha', limpiarDesde)
+        .lte('fecha', limpiarHasta)
+      if (err) throw err
+      setShowLimpiar(false)
+      setLimpiarDesde('')
+      setLimpiarHasta('')
+      setLimpiarCount(null)
+      fetchRegistros()
+    } catch {
+      setLimpiarError('No se pudo eliminar. Intenta de nuevo.')
+    } finally {
+      setLimpiarLoading(false)
+    }
+  }
+
+  function abrirLimpiar() {
+    setLimpiarDesde('')
+    setLimpiarHasta('')
+    setLimpiarCount(null)
+    setLimpiarError(null)
+    setShowLimpiar(true)
+  }
+
   const ultimo = registros[registros.length - 1]
   const primero = registros[0]
 
@@ -100,9 +149,16 @@ export default function Seguimiento() {
 
       <div className={s.segHeader}>
         <h1 className={s.segTitle}>{isEimy ? '📊 Mi progreso 💖' : '📊 Seguimiento'}</h1>
-        <button className={btn.btnPrimary} onClick={() => { setEditando(null); setFormError(null); setShowForm(true) }}>
-          + Registrar
-        </button>
+        {!viewingOther && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className={btn.btnPrimary} onClick={() => { setEditando(null); setFormError(null); setShowForm(true) }}>
+              + Registrar
+            </button>
+            <button className={btn.btnSecondary} onClick={abrirLimpiar} title="Borrar registros por rango de fechas">
+              🗑 Limpiar
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -194,10 +250,12 @@ export default function Seguimiento() {
                     {r.abdomen_cm && <span>Ab: {r.abdomen_cm}</span>}
                   </div>
                   {r.notas && <div className={s.hrNotas}>{r.notas}</div>}
-                  <div className={s.hrActions}>
-                    <button className={s.hrBtn} onClick={() => { setEditando(r); setShowForm(true) }}>✏️</button>
-                    <button className={`${s.hrBtn} ${s.hrDelete}`} onClick={() => handleDelete(r.id)}>🗑</button>
-                  </div>
+                  {!viewingOther && (
+                    <div className={s.hrActions}>
+                      <button className={s.hrBtn} onClick={() => { setEditando(r); setShowForm(true) }}>✏️</button>
+                      <button className={`${s.hrBtn} ${s.hrDelete}`} onClick={() => handleDelete(r.id)}>🗑</button>
+                    </div>
+                  )}
                 </div>
               ))
         }
@@ -217,6 +275,75 @@ export default function Seguimiento() {
               onSave={handleSave}
               onCancel={() => { setShowForm(false); setEditando(null); setFormError(null) }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* MODAL LIMPIAR */}
+      {showLimpiar && (
+        <div className={m.modalOverlay} onClick={() => setShowLimpiar(false)}>
+          <div className={m.modalCard} onClick={e => e.stopPropagation()}>
+            <div className={m.modalHeader}>
+              <h3>Limpiar registros</h3>
+              <button className={m.modalClose} onClick={() => setShowLimpiar(false)}>✕</button>
+            </div>
+            <div style={{ padding: '0 4px' }}>
+              <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16 }}>
+                Elimina registros en un rango de fechas. Útil para borrar datos de prueba sin afectar registros reales.
+              </p>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 4 }}>Desde</label>
+                  <input
+                    type="date"
+                    className={btn.mfInput}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)' }}
+                    value={limpiarDesde}
+                    onChange={e => { setLimpiarDesde(e.target.value); setLimpiarCount(null) }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 4 }}>Hasta</label>
+                  <input
+                    type="date"
+                    className={btn.mfInput}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)' }}
+                    value={limpiarHasta}
+                    onChange={e => { setLimpiarHasta(e.target.value); setLimpiarCount(null) }}
+                  />
+                </div>
+              </div>
+              <button
+                className={btn.btnSecondary}
+                style={{ width: '100%', marginBottom: 12 }}
+                onClick={contarRegistros}
+                disabled={!limpiarDesde || !limpiarHasta}
+              >
+                Verificar cuántos registros hay
+              </button>
+              {limpiarCount !== null && (
+                <div style={{ textAlign: 'center', marginBottom: 16, fontSize: 14 }}>
+                  {limpiarCount === 0
+                    ? <span style={{ color: 'var(--muted)' }}>No hay registros en ese rango.</span>
+                    : <span style={{ color: 'var(--danger, #f87171)', fontWeight: 600 }}>Se eliminarán {limpiarCount} registro{limpiarCount !== 1 ? 's' : ''}. Esta acción no se puede deshacer.</span>
+                  }
+                </div>
+              )}
+              {limpiarError && <div className={btn.pageError} style={{ marginBottom: 12 }}>{limpiarError}</div>}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  className={btn.btnPrimary}
+                  style={{ flex: 1, background: 'var(--danger, #ef4444)' }}
+                  onClick={handleLimpiar}
+                  disabled={!limpiarCount || limpiarLoading}
+                >
+                  {limpiarLoading ? 'Eliminando...' : `Eliminar ${limpiarCount ?? ''}`}
+                </button>
+                <button className={btn.btnSecondary} style={{ flex: 1 }} onClick={() => setShowLimpiar(false)}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

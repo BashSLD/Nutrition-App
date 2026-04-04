@@ -9,7 +9,7 @@ import f from '../styles/Modal.module.css'
 import btn from '../styles/shared.module.css'
 
 export default function Home() {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, refreshProfile, viewingProfile, viewUserId, viewingOther } = useAuth()
   const navigate = useNavigate()
   const [lastRegistro, setLastRegistro] = useState(null)
   const [diasSinRegistro, setDiasSinRegistro] = useState(null)
@@ -19,11 +19,11 @@ export default function Home() {
   const [perfilError, setPerfilError] = useState(null)
 
   useEffect(() => {
-    if (!user) return
+    if (!user || !viewUserId) return
     supabase
       .from('registros')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', viewUserId)
       .order('fecha', { ascending: false })
       .limit(1)
       .single()
@@ -33,10 +33,10 @@ export default function Home() {
           setDiasSinRegistro(diffDias(data.fecha))
         }
       })
-  }, [user])
+  }, [user, viewUserId])
 
-  const isEimy = profile?.theme === 'eimy'
-  const nombre = profile?.name || (isEimy ? 'Eimy' : 'Bash')
+  const isEimy = viewingProfile?.theme === 'eimy'
+  const nombre = viewingProfile?.name || (isEimy ? 'Eimy' : 'Bash')
 
   function openEditPerfil() {
     setEditValues({
@@ -92,31 +92,31 @@ export default function Home() {
           {isEimy ? '✨ Hola, ' : 'Hola, '}{nombre}
         </h1>
         <p className={s.homeSub}>
-          Meta: <strong>{profile?.meta_kcal || '—'} kcal/día</strong>
+          Meta: <strong>{viewingProfile?.meta_kcal || '—'} kcal/día</strong>
         </p>
       </div>
 
       {/* MIS DATOS */}
       <div className={s.homeLastRegistro} style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <div className={s.hlrLabel}>Mis datos</div>
-          <button className={btn.btnEdit} onClick={openEditPerfil}>✏️ Editar</button>
+          <div className={s.hlrLabel}>{viewingOther ? `Datos de ${nombre}` : 'Mis datos'}</div>
+          {!viewingOther && <button className={btn.btnEdit} onClick={openEditPerfil}>✏️ Editar</button>}
         </div>
         <div className={s.hlrRow}>
           <div className={s.hlrStat}>
-            <div className={s.hlrVal}>{profile?.peso_kg ?? '—'} kg</div>
+            <div className={s.hlrVal}>{viewingProfile?.peso_kg ?? '—'} kg</div>
             <div className={s.hlrKey}>Peso</div>
           </div>
           <div className={s.hlrStat}>
-            <div className={s.hlrVal}>{profile?.altura_cm ?? '—'} cm</div>
+            <div className={s.hlrVal}>{viewingProfile?.altura_cm ?? '—'} cm</div>
             <div className={s.hlrKey}>Altura</div>
           </div>
           <div className={s.hlrStat}>
-            <div className={s.hlrVal}>{profile?.edad ?? '—'}</div>
+            <div className={s.hlrVal}>{viewingProfile?.edad ?? '—'}</div>
             <div className={s.hlrKey}>Edad</div>
           </div>
           <div className={s.hlrStat}>
-            <div className={s.hlrVal}>{profile?.meta_kcal ?? '—'}</div>
+            <div className={s.hlrVal}>{viewingProfile?.meta_kcal ?? '—'}</div>
             <div className={s.hlrKey}>Meta kcal</div>
           </div>
         </div>

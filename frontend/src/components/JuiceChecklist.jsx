@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import s from '../styles/Plan.module.css'
 
-export default function JuiceChecklist({ jugo, isEimy, onUpdate }) {
+export default function JuiceChecklist({ jugo, isEimy }) {
   const [checked, setChecked] = useState({})
   const [open, setOpen] = useState(false)
 

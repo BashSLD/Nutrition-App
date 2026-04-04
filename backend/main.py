@@ -15,7 +15,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from routers import auth, plan, lista, seguimiento, fatsecret
+from routers import auth, plan, lista, seguimiento, fatsecret, ai_plan
 
 # ─── Logging ────────────────────────────────────────────
 logging.basicConfig(
@@ -51,6 +51,7 @@ app.include_router(plan.router,        prefix="/api/plan",        tags=["plan"])
 app.include_router(lista.router,       prefix="/api/lista",       tags=["lista"])
 app.include_router(seguimiento.router, prefix="/api/seguimiento", tags=["seguimiento"])
 app.include_router(fatsecret.router,   prefix="/api/fatsecret",   tags=["fatsecret"])
+app.include_router(ai_plan.router,     prefix="/api/plan",        tags=["ai-plan"])
 
 # ─── Health check ───────────────────────────────────────
 @app.get("/api/health")
