@@ -132,6 +132,14 @@
 .juiceReset { background: none; border: none; color: var(--muted); font-size: 10px; cursor: pointer; font-family: var(--font-body); margin-top: 8px; letter-spacing: .1em; padding: 0; }
 .juiceReset:hover { color: var(--accent); }
 .juiceNote { font-size: 11px; color: var(--accent2); margin-top: 8px; font-style: italic; }
+.juiceShopBtn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px; line-height: 1; border-radius: 6px; transition: background .15s; }
+.juiceShopBtn:hover { background: var(--muted2); }
+.shopList { list-style: none; display: flex; flex-direction: column; gap: 0; }
+.shopItem { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--muted2); font-size: 13px; }
+.shopItem:last-child { border-bottom: none; }
+.shopDot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.shopName { flex: 1; color: var(--text); }
+.shopQty { color: var(--accent); font-weight: 700; white-space: nowrap; }
 
 @keyframes sparkle { from { opacity: .3 } to { opacity: .8 } }
 
