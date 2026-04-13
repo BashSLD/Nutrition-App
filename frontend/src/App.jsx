@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth, AuthProvider } from './hooks/useAuth'
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -23,6 +24,11 @@ function ProtectedRoute({ children }) {
 function AppLayout({ children }) {
   const { viewingProfile } = useAuth()
   const theme = viewingProfile?.theme || 'bash'
+
+  useEffect(() => {
+    document.body.classList.remove('theme-bash', 'theme-eimy')
+    document.body.classList.add(`theme-${theme}`)
+  }, [theme])
 
   return (
     <div className={`app theme-${theme}`} data-theme={theme}>
