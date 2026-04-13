@@ -3,10 +3,25 @@ import { createPortal } from 'react-dom'
 import s from '../styles/Plan.module.css'
 import m from '../styles/Modal.module.css'
 
+function calcSemanal(cantidad, dias) {
+  if (cantidad === null || cantidad === undefined) return null
+  const s = String(cantidad)
+  const rangeMatch = s.match(/^([\d.]+)\s*[–\-]\s*([\d.]+)$/)
+  if (rangeMatch) {
+    const lo = Math.round(parseFloat(rangeMatch[1]) * dias)
+    const hi = Math.round(parseFloat(rangeMatch[2]) * dias)
+    return `${lo}–${hi}`
+  }
+  const num = parseFloat(s)
+  if (!isNaN(num)) return String(Math.round(num * dias))
+  return s
+}
+
 export default function JuiceChecklist({ jugo, isEimy }) {
   const [checked, setChecked] = useState({})
   const [open, setOpen] = useState(false)
   const [shopOpen, setShopOpen] = useState(false)
+  const [dias, setDias] = useState(7)
 
   const ingredientes = jugo.ingredientes || []
   const total = ingredientes.length
@@ -81,14 +96,27 @@ export default function JuiceChecklist({ jugo, isEimy }) {
               </h3>
               <button className={m.modalClose} onClick={() => setShopOpen(false)}>✕</button>
             </div>
+            <div className={s.shopDaysRow}>
+              <span className={s.shopDaysLabel}>Días por semana</span>
+              <div className={s.shopDaysCtrl}>
+                <button className={s.shopDaysBtn} onClick={() => setDias(d => Math.max(1, d - 1))}>−</button>
+                <span className={s.shopDaysVal}>{dias}</span>
+                <button className={s.shopDaysBtn} onClick={() => setDias(d => Math.min(7, d + 1))}>+</button>
+              </div>
+            </div>
             <ul className={s.shopList}>
-              {ingredientes.map((ing, idx) => (
-                <li key={idx} className={s.shopItem}>
-                  <span className={s.shopDot} />
-                  <span className={s.shopName}>{ing.nombre}</span>
-                  <span className={s.shopQty}>{ing.cantidad} {ing.unidad}</span>
-                </li>
-              ))}
+              {ingredientes.map((ing, idx) => {
+                const qty = calcSemanal(ing.cantidad, dias)
+                return (
+                  <li key={idx} className={s.shopItem}>
+                    <span className={s.shopDot} />
+                    <span className={s.shopName}>{ing.nombre}</span>
+                    <span className={s.shopQty}>
+                      {qty !== null ? `${qty} ${ing.unidad}` : ing.unidad}
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
             {jugo.nota && <p className={s.juiceNote} style={{ marginTop: 16 }}>{jugo.nota}</p>}
           </div>
