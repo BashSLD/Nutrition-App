@@ -31,7 +31,26 @@ export default function Plan() {
   const [aiError, setAiError]             = useState(null)
   const [aiRechazado, setAiRechazado]     = useState(null)
   const isEimy = viewingProfile?.theme === 'eimy'
-  const today = getTodayFecha()
+  const [today, setToday] = useState(getTodayFecha())
+
+  // Refresca la fecha y recarga datos al cruzar medianoche
+  useEffect(() => {
+    function msHastaMedianoche() {
+      const now = new Date()
+      const mañana = new Date(now)
+      mañana.setHours(24, 0, 0, 0)
+      return mañana - now
+    }
+    let timer
+    function programar() {
+      timer = setTimeout(() => {
+        setToday(getTodayFecha())
+        programar()
+      }, msHastaMedianoche())
+    }
+    programar()
+    return () => clearTimeout(timer)
+  }, [])
 
   const fetchData = useCallback(async () => {
     if (!user || !viewUserId) return
@@ -78,12 +97,25 @@ export default function Plan() {
 
   async function handleSelectMeal(tipo, mealId) {
     if (viewingOther) return
-    const newSel = { ...selecciones, [tipo]: mealId }
-    setSelecciones(newSel)
-    await supabase.from('selecciones_dia').upsert(
-      { user_id: user.id, fecha: today, tipo, meal_id: mealId },
-      { onConflict: 'user_id,fecha,tipo' }
-    )
+    const yaSeleccionada = selecciones[tipo] === mealId
+    if (yaSeleccionada) {
+      // Deseleccionar
+      const newSel = { ...selecciones }
+      delete newSel[tipo]
+      setSelecciones(newSel)
+      await supabase.from('selecciones_dia')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('fecha', today)
+        .eq('tipo', tipo)
+    } else {
+      const newSel = { ...selecciones, [tipo]: mealId }
+      setSelecciones(newSel)
+      await supabase.from('selecciones_dia').upsert(
+        { user_id: user.id, fecha: today, tipo, meal_id: mealId },
+        { onConflict: 'user_id,fecha,tipo' }
+      )
+    }
   }
 
 

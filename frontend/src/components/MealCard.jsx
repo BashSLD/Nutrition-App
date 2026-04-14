@@ -36,8 +36,9 @@ export default function MealCard({ meal, isEimy, selected, onSelect, icon }) {
                 <button
                   className={`${s.btnElegir} ${selected ? s.btnElegirActive : ''}`}
                   onClick={(e) => { e.stopPropagation(); onSelect() }}
+                  title={selected ? 'Quitar selección' : 'Elegir esta comida'}
                 >
-                  {selected ? '✓ Elegida' : 'Elegir esta'}
+                  {selected ? '✓ Elegida  ✕' : 'Elegir esta'}
                 </button>
               )}
             </div>
