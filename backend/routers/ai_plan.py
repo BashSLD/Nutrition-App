@@ -11,6 +11,8 @@ import logging
 logger = logging.getLogger("nutriapp")
 router = APIRouter()
 
+MAX_RETRIES = 2  # Reintentos silenciosos si kcal no cuadra
+
 # ─── Constantes ─────────────────────────────────────────────────────────────
 
 ACTIVIDAD_LABEL = {
@@ -27,7 +29,7 @@ class GenerateRequest(BaseModel):
     target_user_id: Optional[str] = None  # Admin (Bash) generando plan para Eimy
 
 
-# ─── Helpers ─────────────────────────────────────────────────────────────────
+# ─── Helpers — cálculos en Python (nunca delegados a Claude) ────────────────
 
 def calc_tmb(sexo: str, peso: float, altura: float, edad: int) -> int:
     """Mifflin-St Jeor 1990 — única fórmula permitida."""
@@ -56,6 +58,58 @@ def calc_tendencia(registros: list) -> str:
     if delta > 0.5:
         return f"subiendo (+{delta:.1f} kg)"
     return f"estancado ({delta:+.1f} kg)"
+
+
+def sum_kcal(meals: list) -> int:
+    """Suma kcal_total de cada meal. Python es el árbitro, no Claude."""
+    return sum(m.get("kcal_total") or 0 for m in meals)
+
+
+def validate_kcal(meals: list, meta_kcal: int, sexo: str) -> dict:
+    """
+    Valida que el plan cumpla los rangos. Retorna un dict con:
+      - total: kcal sumadas por Python
+      - ok: bool
+      - min_kcal, margen, rango_min, rango_max
+    """
+    total    = sum_kcal(meals)
+    min_kcal = 1200 if sexo == "femenino" else 1500
+    margen   = round(meta_kcal * 0.05) if meta_kcal else 0
+    rango_min = meta_kcal - margen if meta_kcal else min_kcal
+    rango_max = meta_kcal + margen if meta_kcal else 9999
+
+    ok = total >= min_kcal and (not meta_kcal or abs(total - meta_kcal) <= margen)
+    return {
+        "total":     total,
+        "ok":        ok,
+        "min_kcal":  min_kcal,
+        "margen":    margen,
+        "rango_min": rango_min,
+        "rango_max": rango_max,
+    }
+
+
+def build_correction_message(v: dict, meta_kcal: int) -> str:
+    """
+    Mensaje de corrección silenciosa para Claude.
+    Se envía como turno de usuario en la conversación existente.
+    Claude mantiene el contexto de su propuesta anterior.
+    """
+    bajo_minimo = v["total"] < v["min_kcal"]
+    lines = [
+        f"El plan que propusiste suma {v['total']} kcal (calculado por el sistema).",
+        f"El rango aceptable es {v['rango_min']}–{v['rango_max']} kcal (meta {meta_kcal} ± {v['margen']} kcal).",
+    ]
+    if bajo_minimo:
+        lines.append(f"Además está por debajo del mínimo absoluto de {v['min_kcal']} kcal.")
+    lines += [
+        "",
+        "Ajusta ÚNICAMENTE las porciones/cantidades de los ingredientes para que la suma quede dentro del rango.",
+        "No cambies los alimentos base ni el número de comidas.",
+        "Devuelve exactamente el mismo formato JSON con los kcal_total corregidos.",
+        "No incluyas texto fuera del JSON.",
+    ]
+    return "\n".join(lines)
 
 
 def build_prompt(profile: dict, meals: list, jugos: list, registros: list, mensaje: str) -> str:
@@ -115,35 +169,28 @@ def build_prompt(profile: dict, meals: list, jugos: list, registros: list, mensa
 ## Instrucción del usuario
 "{mensaje}"
 
-## Reglas estrictas
-1. Usa EXCLUSIVAMENTE Mifflin-St Jeor 1990 para cualquier cálculo
-   - Hombre: (10×peso) + (6.25×altura) - (5×edad) + 5
-   - Mujer:  (10×peso) + (6.25×altura) - (5×edad) - 161
-   - TDEE = TMB × factor_actividad
-2. El plan debe sumar {meta_kcal} kcal ± 50 (nunca debajo de {min_kcal} kcal)
+## Tu rol
+Proporciona el plan nutricional actualizado con alimentos reales, porciones concretas y el valor calórico de cada comida (kcal_total).
+El sistema calculará y validará los totales — tú NO sumas ni verificas el total, solo aporta datos precisos por comida.
+
+## Reglas
+1. kcal_total de cada meal debe ser el valor calórico real de esa comida, basado en ingredientes y porciones
+2. Meta del día: {meta_kcal} kcal (rango {meta_kcal - margen}–{meta_kcal + margen}) — distribuye bien entre comidas
 3. Proteína mínima: {prot_min}g/día — no negociable
 4. Ingredientes disponibles en México, sin ultraprocesados
 5. No reemplazar comidas reales por snacks o postres
 6. Número de opciones por perfil: {n_opciones}
 7. Si la instrucción viola alguna restricción, responde con rechazado: true y NO modifiques el plan
-8. Responde ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown
 
 ## Restricciones no negociables
 - Sin reemplazar proteína completa por carbohidrato
-- Si el déficit objetivo es {deficit} kcal, el plan debe reflejarlo exactamente
 - En superávit: no exceder TDEE + 600 kcal
 
-## Validación obligatoria ANTES de responder
-1. Suma los kcal_total de todas las comidas del plan_actualizado
-2. Verifica que la suma esté dentro de {meta_kcal} ± {margen} kcal (±5%)
-3. Verifica que la suma no sea menor a {min_kcal} kcal
-4. Si no cumple, ajusta porciones hasta que cumpla — NO devuelvas un plan fuera de rango
-5. Incluye la suma verificada en el campo "kcal_total_plan" de la respuesta
-
 ## Formato de respuesta obligatorio
+Responde ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown.
+
 {{
   "rechazado": false,
-  "kcal_total_plan": <suma de kcal_total de todas las comidas>,
   "cambios": ["descripción breve de cada cambio realizado"],
   "plan_actualizado": {{ "meals": [...], "jugos": [...] }},
   "explicacion": "razonamiento nutricional del ajuste",
@@ -156,10 +203,21 @@ def clean_json_response(raw: str) -> str:
     raw = raw.strip()
     if raw.startswith("```"):
         lines = raw.split("\n")
-        # Quitar primera y última línea (``` y ```)
         inner = lines[1:-1] if lines[-1].strip() == "```" else lines[1:]
         raw = "\n".join(inner).strip()
     return raw
+
+
+def call_claude(client: anthropic.Anthropic, messages: list) -> dict:
+    """Llama a Claude con una lista de mensajes (soporte multi-turno)."""
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=4096,
+        messages=messages,
+    )
+    raw   = response.content[0].text
+    clean = clean_json_response(raw)
+    return json.loads(clean), raw  # retorna dict parseado y texto crudo
 
 
 # ─── Endpoint ────────────────────────────────────────────────────────────────
@@ -204,22 +262,21 @@ async def generate_plan(body: GenerateRequest, user=Depends(get_current_user)):
     jugos     = jugos_res.data or []
     registros = registros_res.data or []
 
+    meta_kcal = profile.get("meta_kcal") or 0
+    sexo      = profile.get("sexo") or "masculino"
+
     prompt = build_prompt(profile, meals, jugos, registros, body.mensaje.strip())
     logger.info(f"AI plan generation requested by {user.id} for target {target_id}")
 
-    # Llamada a Claude
+    client = anthropic.Anthropic(api_key=api_key)
+
+    # ── Turno inicial ────────────────────────────────────────────────────────
+    conversation = [{"role": "user", "content": prompt}]
+
     try:
-        client = anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=4096,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        raw    = response.content[0].text
-        clean  = clean_json_response(raw)
-        result = json.loads(clean)
+        result, raw_text = call_claude(client, conversation)
     except json.JSONDecodeError as e:
-        logger.error(f"Claude returned invalid JSON: {e}")
+        logger.error(f"Claude returned invalid JSON (attempt 1): {e}")
         raise HTTPException(status_code=500, detail="La IA devolvió una respuesta con formato inválido. Intenta de nuevo.")
     except anthropic.APIStatusError as e:
         logger.error(f"Anthropic API error {e.status_code}: {e.message}")
@@ -228,4 +285,69 @@ async def generate_plan(body: GenerateRequest, user=Depends(get_current_user)):
         logger.error(f"Unexpected error in AI plan generation: {e}")
         raise HTTPException(status_code=500, detail="Error inesperado. Intenta de nuevo.")
 
-    return result
+    # Si Claude rechaza la instrucción, devolver directo (no hay plan que validar)
+    if result.get("rechazado"):
+        return result
+
+    # ── Validación Python + reintentos silenciosos ───────────────────────────
+    attempt = 0
+    while attempt < MAX_RETRIES:
+        proposed_meals = result.get("plan_actualizado", {}).get("meals", [])
+        v = validate_kcal(proposed_meals, meta_kcal, sexo)
+
+        logger.info(
+            f"kcal validation attempt {attempt + 1}: "
+            f"sum={v['total']} target={meta_kcal} range={v['rango_min']}–{v['rango_max']} ok={v['ok']}"
+        )
+
+        if v["ok"]:
+            break  # Plan válido — salir del loop
+
+        # Plan fuera de rango → re-prompt silencioso
+        attempt += 1
+        if attempt >= MAX_RETRIES:
+            break  # Se agotaron reintentos — salir y devolver lo que hay con advertencia
+
+        correction_msg = build_correction_message(v, meta_kcal)
+        logger.warning(
+            f"Silent re-prompt #{attempt}: plan sums {v['total']} kcal "
+            f"(range {v['rango_min']}–{v['rango_max']})"
+        )
+
+        # Acumular la conversación: asistente respondió raw_text, nosotros corregimos
+        conversation.append({"role": "assistant", "content": raw_text})
+        conversation.append({"role": "user",      "content": correction_msg})
+
+        try:
+            result, raw_text = call_claude(client, conversation)
+        except json.JSONDecodeError as e:
+            logger.error(f"Claude returned invalid JSON (re-prompt #{attempt}): {e}")
+            raise HTTPException(status_code=500, detail="La IA devolvió una respuesta con formato inválido tras corrección. Intenta de nuevo.")
+        except anthropic.APIStatusError as e:
+            logger.error(f"Anthropic API error on re-prompt: {e.status_code}: {e.message}")
+            raise HTTPException(status_code=502, detail="Error al comunicarse con la IA. Intenta de nuevo.")
+        except Exception as e:
+            logger.error(f"Unexpected error on re-prompt #{attempt}: {e}")
+            raise HTTPException(status_code=500, detail="Error inesperado. Intenta de nuevo.")
+
+    # ── Calcular total final con Python y construir respuesta ────────────────
+    final_meals = result.get("plan_actualizado", {}).get("meals", [])
+    v_final = validate_kcal(final_meals, meta_kcal, sexo)
+
+    advertencias = result.get("advertencias") or []
+    if not v_final["ok"]:
+        advertencias.append(
+            f"El plan suma {v_final['total']} kcal (rango esperado: "
+            f"{v_final['rango_min']}–{v_final['rango_max']} kcal). "
+            "Revisa las porciones antes de confirmar."
+        )
+        logger.warning(f"Plan delivered outside kcal range after {attempt} retries: {v_final['total']} kcal")
+
+    return {
+        "rechazado":      False,
+        "kcal_total_plan": v_final["total"],   # calculado por Python, nunca de Claude
+        "cambios":        result.get("cambios") or [],
+        "plan_actualizado": result.get("plan_actualizado") or {},
+        "explicacion":    result.get("explicacion") or "",
+        "advertencias":   advertencias,
+    }

@@ -78,35 +78,28 @@ ${planJson}
 ## Instrucción del usuario
 "{mensaje}"
 
-## Reglas estrictas
-1. Usa EXCLUSIVAMENTE Mifflin-St Jeor 1990 para cualquier cálculo
-   - Hombre: (10×peso) + (6.25×altura) - (5×edad) + 5
-   - Mujer:  (10×peso) + (6.25×altura) - (5×edad) - 161
-   - TDEE = TMB × factor_actividad
-2. El plan debe sumar ${metaKcal} kcal ± 50 (nunca debajo de ${minKcal} kcal)
+## Tu rol
+Proporciona el plan nutricional actualizado con alimentos reales, porciones concretas y el valor calórico de cada comida (kcal_total).
+El sistema calculará y validará los totales — tú NO sumas ni verificas el total, solo aporta datos precisos por comida.
+
+## Reglas
+1. kcal_total de cada meal debe ser el valor calórico real de esa comida, basado en ingredientes y porciones
+2. Meta del día: ${metaKcal} kcal (rango ${metaKcal - Math.round(metaKcal * 0.05)}–${metaKcal + Math.round(metaKcal * 0.05)}) — distribuye bien entre comidas
 3. Proteína mínima: ${protMin}g/día — no negociable
 4. Ingredientes disponibles en México, sin ultraprocesados
 5. No reemplazar comidas reales por snacks o postres
 6. Número de opciones por perfil: ${nOpciones}
 7. Si la instrucción viola alguna restricción, responde con rechazado: true y NO modifiques el plan
-8. Responde ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown
 
 ## Restricciones no negociables
 - Sin reemplazar proteína completa por carbohidrato
-- Si el déficit objetivo es ${deficit} kcal, el plan debe reflejarlo exactamente
 - En superávit: no exceder TDEE + 600 kcal
 
-## Validación obligatoria ANTES de responder
-1. Suma los kcal_total de todas las comidas del plan_actualizado
-2. Verifica que la suma esté dentro de ${metaKcal} ± ${Math.round(metaKcal * 0.05)} kcal (±5%)
-3. Verifica que la suma no sea menor a ${minKcal} kcal
-4. Si no cumple, ajusta porciones hasta que cumpla — NO devuelvas un plan fuera de rango
-5. Incluye la suma verificada en el campo "kcal_total_plan" de la respuesta
-
 ## Formato de respuesta obligatorio
+Responde ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown.
+
 {
   "rechazado": false,
-  "kcal_total_plan": <suma de kcal_total de todas las comidas>,
   "cambios": ["descripción breve de cada cambio realizado"],
   "plan_actualizado": { ...mismo schema que plan actual... },
   "explicacion": "razonamiento nutricional del ajuste",
